@@ -20,7 +20,7 @@ class ErrorHandler:
     def runtime_error(self, error: LoxRunTimeError):
         print(f"[line {error.token.line} ] {str(error)}\n")
         self.had_runtime_error = True
-
+        
     def report(self, line: int, where: str, message: str):
         print (f"[line {line}] Error {where}: {message}")
         self.had_error = True
