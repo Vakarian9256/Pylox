@@ -7,18 +7,6 @@ from token_type import TokenType as TT
 from runtime_error import LoxRunTimeError
 from error_handler import ErrorHandler
 
-op_dic = {
-    TT.LESS : operator.lt,
-    TT.LESS_EQUAL: operator.le,
-    TT.GREATER : operator.gt,
-    TT.GREATER_EQUAL : operator.ge,
-    TT.MINUS : operator.sub,
-    TT.SLASH : operator.truediv,
-    TT.STAR : operator.mul,
-    TT.EQUAL_EQUAL : operator.eq,
-    TT.BANG_EQUAL : operator.ne
-    }
-
 class Interpreter(Visitor):
 
     def __init__(self, error_handler: ErrorHandler):
@@ -32,20 +20,20 @@ class Interpreter(Visitor):
             self.error_handler.runtime_error(error)
 
 
-    def visit_literal_expr(self, expr: LiteralExpr):
+    def visit_literal_expr(self, expr: LiteralExpr) -> str:
         return expr.value
 
-    def visit_grouping_expr(self, expr: GroupingExpr):
+    def visit_grouping_expr(self, expr: GroupingExpr) -> str:
         return self.evaluate(expr.expression)
     
-    def visit_unary_expr(self, expr: UnaryExpr):
+    def visit_unary_expr(self, expr: UnaryExpr) -> str:
         right = self.evaluate(expr.right)
         if expr.operator.type_ == TT.MINUS:
             return -decimal.Decimal(right)
         if expr.operator.type_ == TT.BANG:
             return not self.is_truth(right)
 
-    def visit_binary_expr(self, expr: BinaryExpr):
+    def visit_binary_expr(self, expr: BinaryExpr) -> str:
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
         if expr.operator.type_ == TT.MINUS:
@@ -70,6 +58,17 @@ class Interpreter(Visitor):
             raise LoxRunTimeError(expr.operator, "Operands must either strings or numbers.")
         elif expr.operator.type_ in (TT.GREATER, TT.GREATER_EQUAL, TT.LESS, TT.LESS_EQUAL, TT.BANG_EQUAL,
                 TT.EQUAL_EQUAL):
+                op_dic = {
+                        TT.LESS : operator.lt,
+                        TT.LESS_EQUAL: operator.le,
+                        TT.GREATER : operator.gt,
+                        TT.GREATER_EQUAL : operator.ge,
+                        TT.MINUS : operator.sub,
+                        TT.SLASH : operator.truediv,
+                        TT.STAR : operator.mul,
+                        TT.EQUAL_EQUAL : operator.eq,
+                        TT.BANG_EQUAL : operator.ne
+                        }
                 op_func = op_dic[expr.operator.type_]
                 self.check_comparison_operands(expr.operator, left, right)
                 return op_func(left, right)
@@ -77,7 +76,7 @@ class Interpreter(Visitor):
             return right
         return None
 
-    def visit_conditional_expr(self, expr: TernaryExpr):
+    def visit_conditional_expr(self, expr: ConditionalExpr) -> str:
         condition = self.evaluate(expr.condition)
         then_branch = self.evaluate(expr.left)
         else_branch = self.evaluate(expr.right)
@@ -85,7 +84,7 @@ class Interpreter(Visitor):
             return then_branch
         return else_branch
         
-    def evaluate(self, expr: Expr):
+    def evaluate(self, expr: Expr) -> str:
         return expr.accept(self)
 
     def check_comparison_operands(self, operator: Token, *args):
