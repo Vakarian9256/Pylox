@@ -33,7 +33,7 @@ class Parser:
         while self.match(TT.COMMA):
             operator = self.previous()
             right = self.conditional()
-            expr = BinaryExpr(expr, operator, right)
+            expr = Binary(expr, operator, right)
         return expr
 
     def conditional(self) -> Expr:
@@ -42,7 +42,7 @@ class Parser:
             then_branch = self.equality()
             self.consume(TT.COLON, " Expect ':' seperator after then branch in ternary conditional.")
             else_branch = self.equality()
-            expr = TernaryExpr(expr, then_branch, else_branch)
+            expr = Conditional(expr, then_branch, else_branch)
         return expr
 
     def equality(self) -> Expr:
@@ -50,7 +50,7 @@ class Parser:
         while self.match(TT.BANG_EQUAL, TT.EQUAL_EQUAL):
             operator = self.previous()
             right = self.comparison()
-            expr = BinaryExpr(expr, operator, right)
+            expr = Binary(expr, operator, right)
         return expr
 
     def comparison(self) -> Expr:
@@ -58,7 +58,7 @@ class Parser:
         while self.match(TT.GREATER, TT.GREATER_EQUAL, TT.LESS, TT.LESS_EQUAL):
             operator = self.previous()
             right = self.term()
-            expr = BinaryExpr(expr, operator, right)
+            expr = Binary(expr, operator, right)
         return expr
 
     def term(self) -> Expr:
@@ -66,7 +66,7 @@ class Parser:
         while self.match(TT.PLUS, TT.MINUS):
             operator = self.previous()
             right = self.factor()
-            expr = BinaryExpr(expr, operator, right)
+            expr = Binary(expr, operator, right)
         return expr
     
     def factor(self) -> Expr:
@@ -74,29 +74,29 @@ class Parser:
         while self.match(TT.SLASH, TT.STAR):
             operator = self.previous()
             right = self.unary()
-            expr = BinaryExpr(expr, operator, right)
+            expr = Binary(expr, operator, right)
         return expr
 
     def unary(self) -> Expr:
         if self.match(TT.BANG, TT.MINUS):
             operator = self.previous()
             right = self.unary()
-            return UnaryExpr(operator, right)
+            return Unary(operator, right)
         return self.primary()
 
     def primary(self) -> Expr:
         if self.match(TT.TRUE):
-            return LiteralExpr(True)
+            return Literal(True)
         if self.match(TT.FALSE):
-            return LiteralExpr(False)
+            return Literal(False)
         if self.match(TT.NIL):
-            return LiteralExpr(None)
+            return Literal(None)
         if self.match(TT.NUMBER, TT.STRING):
-            return LiteralExpr(self.previous().literal)
+            return Literal(self.previous().literal)
         if self.match(TT.LEFT_PAREN):
             expr = self.expression()
             self.consume(TT.RIGHT_PAREN, "Expect ')' after expression.")
-            return GroupingExpr(expr)
+            return Grouping(expr)
         # The following if clauses are productions for missing left operands - "error productions"
         if self.match(TT.COMMA):
             self.error(self.previous(), "Missing left-hand operand.")

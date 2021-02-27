@@ -20,20 +20,20 @@ class Interpreter(Visitor):
             self.error_handler.runtime_error(error)
 
 
-    def visit_literal_expr(self, expr: LiteralExpr) -> str:
+    def visit_literal_expr(self, expr: Literal) -> str:
         return expr.value
 
-    def visit_grouping_expr(self, expr: GroupingExpr) -> str:
+    def visit_grouping_expr(self, expr: Grouping) -> str:
         return self.evaluate(expr.expression)
     
-    def visit_unary_expr(self, expr: UnaryExpr) -> str:
+    def visit_unary_expr(self, expr: Unary) -> str:
         right = self.evaluate(expr.right)
         if expr.operator.type_ == TT.MINUS:
             return -decimal.Decimal(right)
         if expr.operator.type_ == TT.BANG:
             return not self.is_truth(right)
 
-    def visit_binary_expr(self, expr: BinaryExpr) -> str:
+    def visit_binary_expr(self, expr: Binary) -> str:
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
         if expr.operator.type_ == TT.MINUS:
@@ -76,7 +76,7 @@ class Interpreter(Visitor):
             return right
         return None
 
-    def visit_conditional_expr(self, expr: ConditionalExpr) -> str:
+    def visit_conditional_expr(self, expr: Conditional) -> str:
         condition = self.evaluate(expr.condition)
         then_branch = self.evaluate(expr.left)
         else_branch = self.evaluate(expr.right)
