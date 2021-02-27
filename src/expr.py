@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from token import *
+from typing import Any
 
 class Expr:
     pass
@@ -21,7 +22,7 @@ class GroupingExpr(Expr):
         return visitor.visit_grouping_expr(self)
 
 class LiteralExpr(Expr):
-    def __init__(self, value: object):
+    def __init__(self, value: Any):
         self.value = value
 
     def accept(self, visitor) -> str:
@@ -36,10 +37,10 @@ class UnaryExpr(Expr):
         return visitor.visit_unary_expr(self)   
 
 class ConditionalExpr(Expr):
-    def __init__(self, condition: Expr, left: Expr, right: Expr):
+    def __init__(self, condition: Expr, then_branch: Expr, else_branch: Expr):
         self.condition = condition
-        self. left = left
-        self.right = right
+        self.then_branch = then_branch
+        self.else_branch = else_branch
 
     def accept(self, visitor) -> str:
         return visitor.visit_conditional_expr(self)
