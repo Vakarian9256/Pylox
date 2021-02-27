@@ -21,6 +21,6 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
-    def visit_ternary_expr(self, expr: TernaryExpr) -> str:
+    def visit_conditional_expr(self, expr: TernaryExpr) -> str:
         pass
 

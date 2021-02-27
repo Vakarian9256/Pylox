@@ -77,7 +77,7 @@ class Interpreter(Visitor):
             return right
         return None
 
-    def visit_ternary_expr(self, expr: TernaryExpr):
+    def visit_conditional_expr(self, expr: TernaryExpr):
         condition = self.evaluate(expr.condition)
         then_branch = self.evaluate(expr.left)
         else_branch = self.evaluate(expr.right)
