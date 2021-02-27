@@ -45,7 +45,7 @@ if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("script", nargs='?', type=str , default=None,  
                             help="The path to the source file to be interpreted."+
-                            "Path needs to be encapsulated with quotation marks.")
+                            " Path needs to be encapsulated with quotation marks.")
     args = arg_parser.parse_args()
     if args.script is not None:
         lox.run_file(args.script)
