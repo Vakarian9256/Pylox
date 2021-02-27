@@ -8,6 +8,7 @@ from runtime_error import LoxRunTimeError
 from error_handler import ErrorHandler
 from stmt import *
 from environment import Environment
+from run_mode import RunMode
 
 class Interpreter(Visitor):
 
@@ -15,12 +16,19 @@ class Interpreter(Visitor):
         self.error_handler = error_handler
         self.environment = Environment()
 
-    def interpret(self, statements: list[Stmt]):
+    def interpret(self, statements: list[Stmt], mode: RunMode):
         try:
             for statement in statements:
-                self.execute(statement)
+                self.execute_by_mode(statement, mode)
         except LoxRunTimeError as error:
             self.error_handler.runtime_error(error)
+
+    def execute_by_mode(self, statement: Stmt, mode: RunMode):
+        if mode == RunMode.REPL and type(statement) is Expression and type(statement.expr) is not Asign:
+                value = self.evaluate(statement.expr)
+                print(self.stringify(value))
+        else:
+            self.execute(statement)
 
     def execute(self, statement: Stmt):
         statement.accept(self)
