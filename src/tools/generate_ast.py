@@ -25,9 +25,14 @@ def define_sub_classes(outf,base_name: str,types: list[str]):
 
 def define_type(outf, base_name: str, type_name: list[str], type_fields: list[str]):
         outf.write(f"class {type_name}({base_name}):\n")
-        outf.write(f"    def __init__(self, {type_fields}):")
+        outf.write(f"    def __init__(self")
+        if not type_fields:
+            fields = ""
+            outf.write("):")
+        else:
+            outf.write(f", {type_fields}):")
+            fields = type_fields.split(", ")
         outf.write("\n")
-        fields = type_fields.split(", ")
         for field in fields:
             field = field.split(":")
             field_name = field[0].strip()
@@ -93,7 +98,8 @@ def main():
                "Var | name: Token, initializer: Expr",
                "Block | statements: list[Stmt]",
                "If | condition: Expr, then_branch: Stmt, else_branch: Stmt",
-               "While | condition: Expr, body: Stmt"], visitor_lines)
+               "While | condition: Expr, body: Stmt",
+               "Break |"], visitor_lines)
 
     define_visitor(args, visitor_lines)
 

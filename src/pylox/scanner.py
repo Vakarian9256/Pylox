@@ -20,6 +20,7 @@ class Scanner:
 
         self.keywords = { 
             "and" : TT.AND,
+            "break" : TT.BREAK,
             "class" : TT.CLASS,
             "else" : TT.ELSE,
             "false" : TT.FALSE,

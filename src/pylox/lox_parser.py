@@ -15,6 +15,7 @@ class Parser:
         self.tokens = tokens
         self.error_handler = error_handler
         self.current = 0    
+        self.loop_depth = 0
     
     def parse(self) -> list[Stmt]:
         statements = []
@@ -46,6 +47,8 @@ class Parser:
             return self.while_statement()
         if self.match(TT.FOR):
             return self.for_statement()
+        if self.match(TT.BREAK):
+            return self.break_statement()
         if self.match(TT.PRINT):
             return self.print_statement()
         if self.match(TT.LEFT_BRACE):
@@ -83,8 +86,12 @@ class Parser:
         self.consume(TT.LEFT_PAREN,"Expect '(' after 'while'.")
         condition = self.expression()
         self.consume(TT.RIGHT_PAREN,"Expect ')' after 'while'")
-        body = self.statement()
-        return While(condition, body)
+        try:
+            self.loop_depth += 1
+            body = self.statement()
+            return While(condition, body)
+        finally:
+            self.loop_depth -= 1
 
     def for_statement(self) -> Stmt:
         self.consume(TT.LEFT_PAREN,"Expect '(' after 'for'.")
@@ -101,18 +108,25 @@ class Parser:
         if not self.check(TT.RIGHT_PAREN):
             increment = self.expression()
         self.consume(TT.RIGHT_PAREN,"Expect ')' after 'for' clauses.")
-        body = self.statement()
-        if increment is not None:
-            body = Block([body, Expression(increment)])
-        if condition is None:
-            condition = Literal(True)
-        body = While(condition, body)
-        if initializer is not None:
-            body = Block([initializer, body])
-        return body
+        try:
+            self.loop_depth += 1
+            body = self.statement()
+            if increment is not None:
+                body = Block([body, Expression(increment)])
+            if condition is None:
+                condition = Literal(True)
+            body = While(condition, body)
+            if initializer is not None:
+                body = Block([initializer, body])
+                return body 
+        finally:
+            self.loop_depth -= 1
         
-
-
+    def break_statement(self) -> Break:
+        if self.loop_depth == 0:
+            self.error(self.previous(), "Must be inside loop to use 'break'.")
+        self.consume(TT.SEMICOLON,"Expect ';' after break.")
+        return Break()
 
     def expression(self) -> Expr:
         return self.comma_op()

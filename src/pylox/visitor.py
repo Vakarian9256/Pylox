@@ -60,3 +60,7 @@ class Visitor(ABC):
     def visit_while_stmt(self,stmt:While) -> str:
         pass
 
+    @abstractmethod
+    def visit_break_stmt(self,stmt:Break) -> str:
+        pass
+

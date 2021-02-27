@@ -4,7 +4,7 @@ import operator
 from visitor import Visitor
 from expr import *
 from token_type import TokenType as TT
-from runtime_error import LoxRunTimeError
+from error import *
 from error_handler import ErrorHandler
 from stmt import *
 from environment import Environment
@@ -143,8 +143,14 @@ class Interpreter(Visitor):
         return self.evaluate(expr.right)
 
     def visit_while_stmt(self, loop: While):
-        while self.is_truth(self.evaluate(loop.condition)):
-            self.execute(loop.body)
+        try:
+            while self.is_truth(self.evaluate(loop.condition)):
+                self.execute(loop.body)
+        except BreakException:
+            pass
+    
+    def visit_break_stmt(self, break_stmt: Break):
+        raise BreakException()
     
     def execute_block(self, statements: list[Stmt], environment: Environment):
         previous_envi = self.environment
@@ -154,6 +160,7 @@ class Interpreter(Visitor):
                 self.execute(statement)
         finally:
             self.environment = previous_envi
+
     
     def evaluate(self, expr: Expr) -> str:
         return expr.accept(self)
