@@ -25,7 +25,7 @@ class Lox:
                 self.run(input(">"))
                 self.error_handler.had_error = False
         except KeyboardInterrupt:
-            print ("\n Keyboard interrupt")
+            print ("\n Keyboard interrupt.")
 
     def run(self, source: str):
         scanner = Scanner(self.error_handler, source)

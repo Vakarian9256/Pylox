@@ -7,11 +7,13 @@ from token_type import TokenType as TT
 from runtime_error import LoxRunTimeError
 from error_handler import ErrorHandler
 from stmt import *
+from environment import Environment
 
 class Interpreter(Visitor):
 
     def __init__(self, error_handler: ErrorHandler):
         self.error_handler = error_handler
+        self.environment = Environment()
 
     def interpret(self, statements: list[Stmt]):
         try:
@@ -23,13 +25,30 @@ class Interpreter(Visitor):
     def execute(self, statement: Stmt):
         statement.accept(self)
     
+    def visit_var_stmt(self, stmt: Var):
+        value = None
+        if stmt.initializer is not None:
+            value = self.evaluate(stmt.initializer)
+        self.environment.define(stmt.name.lexeme, value)
+
     def visit_expression_stmt(self, stmt: Expression):
         expr = self.evaluate(stmt.expr)
 
-    def visit_print_stmt(self, stmt):
+    def visit_print_stmt(self, stmt: Print):
         value = self.evaluate(stmt.expr)
         print(self.stringify(value))
-    
+
+    def visit_block_stmt(self, stmt: Block):
+        self.execute_block(stmt.statements, Environment(self.environment))
+
+    def visit_variable_expr(self, expr: Variable) -> Any:
+        return self.environment.get(expr.name)
+
+    def visit_asign_expr(self, expr: Asign) -> Any:
+        value = self.evaluate(expr.value)
+        self.environment.assign(expr.name, value)
+        return value
+
     def visit_literal_expr(self, expr: Literal) -> str:
         return expr.value
 
@@ -94,6 +113,15 @@ class Interpreter(Visitor):
             return then_branch
         return else_branch
         
+    def execute_block(self, statements: list[Stmt], environment: Environment):
+        previous_envi = self.environment
+        try:
+            self.environment = environment
+            for statement in statements:
+                self.execute(statement)
+        finally:
+            self.environment = previous_envi
+    
     def evaluate(self, expr: Expr) -> str:
         return expr.accept(self)
 

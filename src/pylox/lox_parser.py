@@ -19,12 +19,31 @@ class Parser:
     def parse(self) -> list[Stmt]:
         statements = []
         while not self.is_at_end():
-            statements.append(self.statement())
+            statements.append(self.declaration())
         return statements
+
+    def declaration(self) -> Stmt:
+        try:
+            if self.match(TT.VAR):
+                return self.var_declaration()
+            return self.statement()
+        except Parser.ParseError as error:
+            self.synchronize()
+            return None
+    
+    def var_declaration(self) -> Stmt:
+        name = self.consume(TT.IDENTIFIER, "Expect variable name.")
+        initializer = None
+        if self.match(TT.EQUAL):
+            initializer = self.expression()
+        self.consume(TT.SEMICOLON, "Expect semicolon after variable declaration.")
+        return Var(name, initializer)
 
     def statement(self) -> Stmt:
         if self.match(TT.PRINT):
             return self.print_statement()
+        if self.match(TT.LEFT_BRACE):
+            return Block(self.block_statement())
         return self.expression_statement()
     
     def print_statement(self) -> Stmt:
@@ -32,6 +51,13 @@ class Parser:
         self.consume(TT.SEMICOLON, "Expect ';' after value.")
         return Print(value)
 
+    def block_statement(self) -> list[Stmt]:
+        statements = []
+        while not self.check(TT.RIGHT_BRACE) and not self.is_at_end():
+            statements.append(self.declaration())
+        self.consume(TT.RIGHT_BRACE,"Expect '}' after block.")
+        return statements
+        
     def expression_statement(self) -> Stmt:
         expr = self.expression()
         self.consume(TT.SEMICOLON, "Expect ';' after expression.")
@@ -45,12 +71,24 @@ class Parser:
      and therefore it will be the first "level" in the descent
      '''
     def comma_op(self) -> Expr:
-        expr = self.conditional()
+        expr = self.assignment()
         while self.match(TT.COMMA):
             operator = self.previous()
-            right = self.conditional()
+            right = self.assignment()
             expr = Binary(expr, operator, right)
         return expr
+
+    def assignment(self) -> Expr:
+        expr = self.conditional()
+        if self.match(TT.EQUAL):
+            equals = self.previous()
+            value = self.assignment()
+            if type(expr) is Variable:
+                name = expr.name
+                return Asign(name, value)
+            self.error(equals, "Invalid assignment target.")
+        return expr
+
 
     def conditional(self) -> Expr:
         expr = self.equality()
@@ -113,6 +151,8 @@ class Parser:
             expr = self.expression()
             self.consume(TT.RIGHT_PAREN, "Expect ')' after expression.")
             return Grouping(expr)
+        if self.match(TT.IDENTIFIER):
+            return Variable(self.previous())
         # The following if clauses are productions for missing left operands - "error productions"
         if self.match(TT.COMMA):
             self.error(self.previous(), "Missing left-hand operand.")

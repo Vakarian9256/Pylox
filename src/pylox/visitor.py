@@ -2,35 +2,49 @@ from abc import ABC, abstractmethod
 from expr import * 
 from stmt import *  
 
-from stmt import *
-from expr import *
 
 class Visitor(ABC):
     @abstractmethod
-    def visit_binary_expr(self,expr: Binary):
+    def visit_asign_expr(self,expr:Asign) -> str:
         pass
 
     @abstractmethod
-    def visit_grouping_expr(self,expr: Grouping):
+    def visit_binary_expr(self,expr:Binary) -> str:
         pass
 
     @abstractmethod
-    def visit_literal_expr(self,expr: Literal):
+    def visit_grouping_expr(self,expr:Grouping) -> str:
         pass
 
     @abstractmethod
-    def visit_unary_expr(self,expr: Unary):
+    def visit_literal_expr(self,expr:Literal) -> str:
         pass
 
     @abstractmethod
-    def visit_conditional_expr(self,expr: Conditional):
-        pass
-'''
-    @abstractmethod
-    def visit_expression_stmt(self,stmt: Expression):
+    def visit_unary_expr(self,expr:Unary) -> str:
         pass
 
     @abstractmethod
-    def visit_print_stmt(self,stmt: Print):
+    def visit_conditional_expr(self,expr:Conditional) -> str:
         pass
-'''
+
+    @abstractmethod
+    def visit_variable_expr(self,expr:Variable) -> str:
+        pass
+
+    @abstractmethod
+    def visit_expression_stmt(self,stmt:Expression) -> str:
+        pass
+
+    @abstractmethod
+    def visit_print_stmt(self,stmt:Print) -> str:
+        pass
+
+    @abstractmethod
+    def visit_var_stmt(self,stmt:Var) -> str:
+        pass
+
+    @abstractmethod
+    def visit_block_stmt(self,stmt:Block) -> str:
+        pass
+
