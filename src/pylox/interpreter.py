@@ -12,6 +12,8 @@ from run_mode import RunMode
 
 class Interpreter(Visitor):
 
+    uninitialized = object()
+
     def __init__(self, error_handler: ErrorHandler):
         self.error_handler = error_handler
         self.environment = Environment()
@@ -34,7 +36,7 @@ class Interpreter(Visitor):
         statement.accept(self)
     
     def visit_var_stmt(self, stmt: Var):
-        value = None
+        value = Interpreter.uninitialized
         if stmt.initializer is not None:
             value = self.evaluate(stmt.initializer)
         self.environment.define(stmt.name.lexeme, value)
@@ -50,7 +52,10 @@ class Interpreter(Visitor):
         self.execute_block(stmt.statements, Environment(self.environment))
 
     def visit_variable_expr(self, expr: Variable) -> Any:
-        return self.environment.get(expr.name)
+        value = self.environment.get(expr.name)
+        if value == Interpreter.uninitialized:
+            raise LoxRunTimeError(expr.name, "Variable must be initialized before use.")
+        return value
 
     def visit_asign_expr(self, expr: Asign) -> Any:
         value = self.evaluate(expr.value)
