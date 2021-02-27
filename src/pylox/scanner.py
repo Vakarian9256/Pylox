@@ -34,6 +34,26 @@ class Scanner:
             "true" : TT.TRUE,
             "var" : TT.VAR,
             "while" : TT.WHILE
+
+            self.double_keys = {
+                "!" : DoubleToken(TT.BANG, TT.BANG_EQUAL),
+                "=" : DoubleToken(TT.EQUAL, TT.EQUAL_EQUAL),
+                "<" : DoubleToken(TT.LESS, TT.LESS_EQUAL),
+                ">" : DoubleToken(TT.GREATER, TT.GREATER_EQUAL)
+                }
+
+            self.single_keys = {
+                "(" : TT.LEFT_PAREN,
+                ")" : TT.RIGHT_PAREN,
+                "{" : TT.LEFT_BRACE,
+                "}" : TT.RIGHT_BRACE,
+                "," : TT.COMMA,
+                "." : TT.DOT,
+                "-" : TT.MINUS,
+                "+" : TT.PLUS,
+                ";" : TT.SEMICOLON,
+                "*" : TT.STAR
+                }
         }
 
         self.error_handler = error_handler
@@ -51,31 +71,13 @@ class Scanner:
     
     def scan_token(self):
         char = self.advance()
-        single_keys = {
-            "(" : TT.LEFT_PAREN,
-            ")" : TT.RIGHT_PAREN,
-            "{" : TT.LEFT_BRACE,
-            "}" : TT.RIGHT_BRACE,
-            "," : TT.COMMA,
-            "." : TT.DOT,
-            "-" : TT.MINUS,
-            "+" : TT.PLUS,
-            ";" : TT.SEMICOLON,
-            "*" : TT.STAR
-            }
-        double_keys = {
-            "!" : DoubleToken(TT.BANG, TT.BANG_EQUAL),
-            "=" : DoubleToken(TT.EQUAL, TT.EQUAL_EQUAL),
-            "<" : DoubleToken(TT.LESS, TT.LESS_EQUAL),
-            ">" : DoubleToken(TT.GREATER, TT.GREATER_EQUAL)
-            }
-        if char in single_keys:
-            self.add_token(single_keys.get(char))
-        elif char in double_keys:
+        if char in self.single_keys:
+            self.add_token(self.single_keys.get(char))
+        elif char in self.double_keys:
             if(self.match('=')):
-                self.add_token(double_keys[char].double)
+                self.add_token(self.double_keys[char].double)
             else:
-                self.add_token(double_keys[char].single)
+                self.add_token(self.double_keys[char].single)
         elif char == '/':
             if self.peek() == '*':
                 self.skip_comment()
@@ -162,8 +164,10 @@ class Scanner:
             self.advance()
         
         text = self.source[self.start:self.current]
-        type = self.keywords.get(text) if self.keywords.get(text) != None else TT.IDENTIFIER
-        self.add_token(type)
+        type_ = TT.IDENTIFIER
+        if text in self.keywords:
+            type_ = self.keywords[text]
+        self.add_token(type_)
     
     def skip_comment(self):
         comment_lines =[self.line]
