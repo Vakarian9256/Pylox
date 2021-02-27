@@ -6,20 +6,30 @@ from expr import *
 from token_type import TokenType as TT
 from runtime_error import LoxRunTimeError
 from error_handler import ErrorHandler
+from stmt import *
 
 class Interpreter(Visitor):
 
     def __init__(self, error_handler: ErrorHandler):
         self.error_handler = error_handler
 
-    def interpret(self, expr: Expr):
+    def interpret(self, statements: list[Stmt]):
         try:
-            value =  self.evaluate(expr)
-            print(self.stringify(value))
+            for statement in statements:
+                self.execute(statement)
         except LoxRunTimeError as error:
             self.error_handler.runtime_error(error)
 
+    def execute(self, statement: Stmt):
+        statement.accept(self)
+    
+    def visit_expression_stmt(self, stmt: Expression):
+        expr = self.evaluate(stmt.expr)
 
+    def visit_print_stmt(self, stmt):
+        value = self.evaluate(stmt.expr)
+        print(self.stringify(value))
+    
     def visit_literal_expr(self, expr: Literal) -> str:
         return expr.value
 

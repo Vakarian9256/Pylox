@@ -11,6 +11,7 @@ DoubleToken = namedtuple("DoubleSingle", "single, double")
 class Scanner:
     def __init__(self, error_handler: ErrorHandler, source: str):
         self.source = source
+        self.error_handler = error_handler
         self.tokens = []
 
         self.start = 0
@@ -34,29 +35,27 @@ class Scanner:
             "true" : TT.TRUE,
             "var" : TT.VAR,
             "while" : TT.WHILE
+            }
 
-            self.double_keys = {
-                "!" : DoubleToken(TT.BANG, TT.BANG_EQUAL),
-                "=" : DoubleToken(TT.EQUAL, TT.EQUAL_EQUAL),
-                "<" : DoubleToken(TT.LESS, TT.LESS_EQUAL),
-                ">" : DoubleToken(TT.GREATER, TT.GREATER_EQUAL)
-                }
+        self.double_keys = {
+            "!" : DoubleToken(TT.BANG, TT.BANG_EQUAL),
+            "=" : DoubleToken(TT.EQUAL, TT.EQUAL_EQUAL),
+            "<" : DoubleToken(TT.LESS, TT.LESS_EQUAL),
+            ">" : DoubleToken(TT.GREATER, TT.GREATER_EQUAL)
+            }
 
-            self.single_keys = {
-                "(" : TT.LEFT_PAREN,
-                ")" : TT.RIGHT_PAREN,
-                "{" : TT.LEFT_BRACE,
-                "}" : TT.RIGHT_BRACE,
-                "," : TT.COMMA,
-                "." : TT.DOT,
-                "-" : TT.MINUS,
-                "+" : TT.PLUS,
-                ";" : TT.SEMICOLON,
-                "*" : TT.STAR
-                }
-        }
-
-        self.error_handler = error_handler
+        self.single_keys = {
+            "(" : TT.LEFT_PAREN,
+            ")" : TT.RIGHT_PAREN,
+            "{" : TT.LEFT_BRACE,
+            "}" : TT.RIGHT_BRACE,
+            "," : TT.COMMA,
+            "." : TT.DOT,
+            "-" : TT.MINUS,
+            "+" : TT.PLUS,
+            ";" : TT.SEMICOLON,
+            "*" : TT.STAR
+            }
     
     def scan_tokens(self) -> list[Token]:
         while not self.is_at_end():

@@ -31,10 +31,10 @@ class Lox:
         scanner = Scanner(self.error_handler, source)
         tokens = scanner.scan_tokens()
         parser = Parser(tokens, self.error_handler)
-        expression = parser.parse()
+        statements = parser.parse()
         if self.error_handler.had_error == True:
             return 
-        self.interpreter.interpret(expression)
+        self.interpreter.interpret(statements)
 
 
         
