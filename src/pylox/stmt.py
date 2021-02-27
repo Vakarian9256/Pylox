@@ -33,4 +33,3 @@ class Block(Stmt):
 
     def accept(self, visitor) -> str:
         return visitor.visit_block_stmt(self)
-

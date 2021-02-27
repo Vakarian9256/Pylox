@@ -23,7 +23,4 @@ class ErrorHandler:
         
     def report(self, line: int, where: str, message: str):
         print (f"[line {line}] Error {where}: {message}")
-        self.had_error = True
-
-
-    
+        self.had_error = True   
