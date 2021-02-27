@@ -1,4 +1,5 @@
 import sys
+import argparse
 from error_handler import ErrorHandler
 from scanner import Scanner
 from lox_parser import Parser
@@ -12,7 +13,7 @@ class Lox:
     
     def run_file(self, path: str):
         with open(path, "r") as f:
-            self.run(self, "".join(f.readlines()))
+            self.run("".join(f.readlines()))
             if self.error_handler.had_error:
                 exit()
             if self.error_handler.had_runtime_error:
@@ -41,10 +42,12 @@ class Lox:
 
 if __name__ == "__main__":
     lox = Lox()
-    if  len(sys.argv) > 2:
-        print ("Usage: pylox [script]")
-    elif len(sys.argv) == 2:
-        lox.run_file(sys.argv[1])
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument("script", nargs='?', type=str , default=None,  
+                            help="The path to the source file to be interpreted."+
+                            "Path needs to be encapsulated with quotation marks.")
+    args = arg_parser.parse_args()
+    if args.script is not None:
+        lox.run_file(args.script)
     else:
         lox.run_prompt()
-    asdas
