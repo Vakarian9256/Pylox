@@ -65,8 +65,8 @@ class Interpreter(Visitor):
             '''
             if type(left) is decimal.Decimal and type(right) is decimal.Decimal:
                 return decimal.Decimal(left) + decimal.Decimal(right)
-            if type(left) is str or type(right) is str:
-                return str(left)+str(right)
+            elif type(left) is str or type(right) is str:
+                return self.stringify(left)+self.stringify(right)
             raise LoxRunTimeError(expr.operator, "Operands must either strings or numbers.")
         elif expr.operator.type_ in (TT.GREATER, TT.GREATER_EQUAL, TT.LESS, TT.LESS_EQUAL, TT.BANG_EQUAL,
                 TT.EQUAL_EQUAL):
