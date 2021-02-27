@@ -52,9 +52,11 @@ class Interpreter(Visitor):
             self.check_number_operand(expr.operator, left, right)
             return decimal.Decimal(left) - decimal.Decimal(right)
         elif expr.operator.type_ == TT.STAR:
+            self.check_number_operand(expr.operator, left, right)
             return decimal.Decimal(left) * decimal.Decimal(right)
         elif expr.operator.type_ == TT.SLASH:
             if self.legal_divisor(expr.operator, right):
+                self.check_number_operand(expr.operator, left, right)
                 return decimal.Decimal(left) / decimal.Decimal(right)
         elif expr.operator.type_ == TT.PLUS:
             '''
@@ -69,6 +71,7 @@ class Interpreter(Visitor):
         elif expr.operator.type_ in (TT.GREATER, TT.GREATER_EQUAL, TT.LESS, TT.LESS_EQUAL, TT.BANG_EQUAL,
                 TT.EQUAL_EQUAL):
                 op_func = op_dic[expr.operator.type_]
+                self.check_comparison_operands(expr.operator, left, right)
                 return op_func(left, right)
         elif expr.operator.type_ == TT.COMMA:
             return right
@@ -85,6 +88,17 @@ class Interpreter(Visitor):
     def evaluate(self, expr: Expr):
         return expr.accept(self)
 
+    def check_comparison_operands(self, operator: Token, *args):
+        all_string = True
+        all_num = True
+        for arg in args:
+            if type(arg) is not str:
+                all_string = False
+            if type(arg) is not decimal.Decimal:
+                all_num = False
+        if all_num == False and all_string == False:
+            raise LoxRunTimeError(operator, "Operands must all be of the same type.")
+
     def is_truth(self, expression) -> bool:
         if expression is None:
             return False
@@ -95,7 +109,7 @@ class Interpreter(Visitor):
     def check_number_operand(self, operator: Token, *args):
         for arg in args:
             if type(arg) is not decimal.Decimal:
-                raise LoxRuntimeError(operator, "Operand must be a number.")
+                raise LoxRunTimeError(operator, "Operands must be numbers.")
     
     def stringify(self, value: any) -> str:
         if value is None:

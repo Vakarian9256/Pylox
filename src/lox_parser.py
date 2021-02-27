@@ -40,7 +40,7 @@ class Parser:
         expr = self.equality()
         if self.match(TT.QUESTION):
             then_branch = self.equality()
-            self.consume(TT.COLON, " Expected ':' seperator after then branch in ternary conditional.")
+            self.consume(TT.COLON, " Expect ':' seperator after then branch in ternary conditional.")
             else_branch = self.equality()
             expr = TernaryExpr(expr, then_branch, else_branch)
         return expr
@@ -97,6 +97,7 @@ class Parser:
             expr = self.expression()
             self.consume(TT.RIGHT_PAREN, "Expect ')' after expression.")
             return GroupingExpr(expr)
+        # The following if clauses are productions for missing left operands - "error productions"
         if self.match(TT.COMMA):
             self.error(self.previous(), "Missing left-hand operand.")
             self.comma_op()

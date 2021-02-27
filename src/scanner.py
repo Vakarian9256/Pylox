@@ -188,7 +188,7 @@ class Scanner:
         self.add_token(TT.QUESTION)
         while not self.match(':'):
             if self.is_at_end():
-                self.error_handler.error(self.line, " Expected ':' seperator after then branch in ternary conditional.")
+                self.error_handler.error(self.line, " Expect ':' seperator after then branch in ternary conditional.")
                 return
             self.start = self.current
             self.scan_token()
