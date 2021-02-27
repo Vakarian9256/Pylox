@@ -35,13 +35,13 @@ class UnaryExpr(Expr):
     def accept(self, visitor) -> str:
         return visitor.visit_unary_expr(self)   
 
-class TernaryExpr(Expr):
+class ConditionalExpr(Expr):
     def __init__(self, condition: Expr, left: Expr, right: Expr):
         self.condition = condition
         self. left = left
         self.right = right
 
     def accept(self, visitor) -> str:
-        return visitor.visit_ternary_expr(self)
+        return visitor.visit_conditional_expr(self)
 
 
