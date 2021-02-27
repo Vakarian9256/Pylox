@@ -40,12 +40,18 @@ class Parser:
         return Var(name, initializer)
 
     def statement(self) -> Stmt:
+        if self.match(TT.IF):
+            return self.if_statement()
+        if self.match(TT.WHILE):
+            return self.while_statement()
+        if self.match(TT.FOR):
+            return self.for_statement()
         if self.match(TT.PRINT):
             return self.print_statement()
         if self.match(TT.LEFT_BRACE):
             return Block(self.block_statement())
         return self.expression_statement()
-    
+
     def print_statement(self) -> Stmt:
         value = self.expression()
         self.consume(TT.SEMICOLON, "Expect ';' after value.")
@@ -58,10 +64,54 @@ class Parser:
         self.consume(TT.RIGHT_BRACE,"Expect '}' after block.")
         return statements
         
-    def expression_statement(self) -> Stmt:
+    def expression_statement(self) -> Expression:
         expr = self.expression()
         self.consume(TT.SEMICOLON, "Expect ';' after expression.")
         return Expression(expr)
+
+    def if_statement(self) -> If:
+        self.consume(TT.LEFT_PAREN,"Expect '(' after 'if'.")
+        condition = self.expression()
+        self.consume(TT.RIGHT_PAREN,"Expect ')' after 'if' condition.")
+        then_branch = self.statement()
+        else_branch = None
+        if self.match(TT.ELSE):
+            else_branch = self.statement()
+        return If(condition, then_branch, else_branch)
+    
+    def while_statement(self) -> While:
+        self.consume(TT.LEFT_PAREN,"Expect '(' after 'while'.")
+        condition = self.expression()
+        self.consume(TT.RIGHT_PAREN,"Expect ')' after 'while'")
+        body = self.statement()
+        return While(condition, body)
+
+    def for_statement(self) -> Stmt:
+        self.consume(TT.LEFT_PAREN,"Expect '(' after 'for'.")
+        initializer = None
+        if self.match(TT.VAR):
+            initializer = self.var_declaration()
+        elif not self.match(TT.SEMICOLON):
+            initializer = self.expression_statement()
+        condition = None
+        if not self.check(TT.SEMICOLON):
+            condition = self.expression()
+        self.consume(TT.SEMICOLON,"Expect ';' after 'for' condition.")
+        increment = None
+        if not self.check(TT.RIGHT_PAREN):
+            increment = self.expression()
+        self.consume(TT.RIGHT_PAREN,"Expect ')' after 'for' clauses.")
+        body = self.statement()
+        if increment is not None:
+            body = Block([body, Expression(increment)])
+        if condition is None:
+            condition = Literal(True)
+        body = While(condition, body)
+        if initializer is not None:
+            body = Block([initializer, body])
+        return body
+        
+
 
 
     def expression(self) -> Expr:
@@ -91,13 +141,31 @@ class Parser:
 
 
     def conditional(self) -> Expr:
-        expr = self.equality()
+        expr = self.or_expr()
         if self.match(TT.QUESTION):
-            then_branch = self.equality()
+            then_branch = self.or_expr()
             self.consume(TT.COLON, " Expect ':' seperator after then branch in ternary conditional.")
-            else_branch = self.equality()
+            else_branch = self.or_expr()
             expr = Conditional(expr, then_branch, else_branch)
         return expr
+
+    def or_expr(self) -> Expr:
+        expr = self.and_expr()
+        while self.match(TT.OR):
+            operator = self.previous()
+            right = self.and_expr()
+            expr = Logical(expr, operator, right)
+        return expr
+
+    def and_expr(self) -> Expr:
+        expr = self.equality()
+        while self.match(TT.AND):
+            operator = self.previous()
+            right = self.equality()
+            expr = Logical(expr, operator, right)
+        return expr
+
+
 
     def equality(self) -> Expr:
         expr = self.comparison()

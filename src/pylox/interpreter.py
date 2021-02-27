@@ -51,6 +51,12 @@ class Interpreter(Visitor):
     def visit_block_stmt(self, stmt: Block):
         self.execute_block(stmt.statements, Environment(self.environment))
 
+    def visit_if_stmt(self, stmt: If):
+        if self.is_truth(stmt.condition):
+            self.execute(stmt.then_branch)
+        elif not self.is_truth(stmt.condition):
+            self.execute(stmt.else_branch)
+
     def visit_variable_expr(self, expr: Variable) -> Any:
         value = self.environment.get(expr.name)
         if value == Interpreter.uninitialized:
@@ -126,6 +132,20 @@ class Interpreter(Visitor):
             return then_branch
         return else_branch
         
+    def visit_logical_expr(self, expr: Logical) -> str:
+        left = self.evaluate(expr.left)
+        if expr.operator.type_ == TT.OR:
+            if self.is_truth(left):
+                return left
+        else:
+            if not self.is_truth(left):
+                return left
+        return self.evaluate(expr.right)
+
+    def visit_while_stmt(self, loop: While):
+        while self.is_truth(self.evaluate(loop.condition)):
+            self.execute(loop.body)
+    
     def execute_block(self, statements: list[Stmt], environment: Environment):
         previous_envi = self.environment
         try:

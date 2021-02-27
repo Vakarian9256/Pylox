@@ -23,7 +23,7 @@ class Scanner:
             "class" : TT.CLASS,
             "else" : TT.ELSE,
             "false" : TT.FALSE,
-            "for" : TT.FALSE,
+            "for" : TT.FOR,
             "fun" : TT.FUN,
             "if" : TT.IF,
             "nil" : TT.NIL,

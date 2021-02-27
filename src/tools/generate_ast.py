@@ -6,12 +6,8 @@ def define_import(outf, base_name: str):
         outf.write("from typing import Any\n")
     elif base_name == 'Stmt':
         outf.write("from expr import Expr\n")
-    outf.write("from token import Token \n\n")
-
-def define_visitor_import(outf):
-    outf.write("from abc import ABC, abstractmethod\n")
-    outf.write("from expr import * \n")
-    outf.write("from stmt import *  \n\n")
+    if not base_name == 'visitor':
+        outf.write("from token import Token \n\n")
 
 def define_base_class(outf, base_name: str):
     outf.write(f"class {base_name}:")
@@ -48,23 +44,26 @@ def add_visit(visitor_lines, base_name: str, types: list[str]):
                             f"{type_name}) -> str:\n")
         visitor_lines.append("        pass\n\n")
 
-def define_ast(output_dir, base_name: str, types: list[str], visitor_lines: list[str]):
-    path = f"{output_dir}\{base_name.lower()}.py"
-    output_file = open(path, mode='w+', encoding='utf-8')
-    define_import(output_file, base_name)
-    define_base_class(output_file,base_name)
-    define_sub_classes(output_file, base_name,types)
+def define_ast(out_dir, base_name: str, types: list[str], visitor_lines: list[str]):
+    path = f"{out_dir}\{base_name.lower()}.py"
+    outf = open(path, mode='w+', encoding='utf-8')
+    define_import(outf, base_name)
+    define_base_class(outf,base_name)
+    define_sub_classes(outf, base_name,types)
+    visitor_lines.insert(0,f"from {base_name.lower()} import * \n")
     add_visit(visitor_lines, base_name, types)
     
 
-def define_visitor(output_dir, visitor_lines: list[str]):
+def define_visitor(out_dir, visitor_lines: list[str]):
     visitor = "visitor"
-    path = f"{output_dir}\{visitor}.py"
-    output_file = open(path, mode='w+', encoding='utf-8')
-    define_visitor_import(output_file)
+    path = f"{out_dir}\{visitor}.py"
+    outf = open(path, mode='w+', encoding='utf-8')
+    define_import(outf, visitor)
     for line in visitor_lines:
-        output_file.write(line)
-    output_file.close()
+        outf.write(line)
+        if line == visitor_lines[1]:
+            outf.write("\n")
+    outf.close()
 
 
 
@@ -85,13 +84,16 @@ def main():
                "Literal | value: Any",
                "Unary | operator: Token, right: Expr",
                "Conditional | condition: Expr, left: Expr, right: Expr",
-               "Variable | name: Token"], visitor_lines)
+               "Variable | name: Token",
+               "Logical |  left: Expr, operator: Token, right: Expr"], visitor_lines)
 
     define_ast(args, "Stmt", [
                "Expression | expr: Expr",
                "Print | expr: Expr",
                "Var | name: Token, initializer: Expr",
-               "Block | statements: list[Stmt]"], visitor_lines)
+               "Block | statements: list[Stmt]",
+               "If | condition: Expr, then_branch: Stmt, else_branch: Stmt",
+               "While | condition: Expr, body: Stmt"], visitor_lines)
 
     define_visitor(args, visitor_lines)
 

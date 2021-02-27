@@ -33,3 +33,21 @@ class Block(Stmt):
 
     def accept(self, visitor) -> str:
         return visitor.visit_block_stmt(self)
+
+class If(Stmt):
+    def __init__(self, condition: Expr, then_branch: Stmt, else_branch: Stmt):
+        self.condition = condition
+        self.then_branch = then_branch
+        self.else_branch = else_branch
+
+    def accept(self, visitor) -> str:
+        return visitor.visit_if_stmt(self)
+
+class While(Stmt):
+    def __init__(self, condition: Expr, body: Stmt):
+        self.condition = condition
+        self.body = body
+
+    def accept(self, visitor) -> str:
+        return visitor.visit_while_stmt(self)
+

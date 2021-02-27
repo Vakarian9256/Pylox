@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
+from stmt import * 
 from expr import * 
-from stmt import *  
 
 
 class Visitor(ABC):
@@ -33,6 +33,10 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
+    def visit_logical_expr(self,expr:Logical) -> str:
+        pass
+
+    @abstractmethod
     def visit_expression_stmt(self,stmt:Expression) -> str:
         pass
 
@@ -46,5 +50,13 @@ class Visitor(ABC):
 
     @abstractmethod
     def visit_block_stmt(self,stmt:Block) -> str:
+        pass
+
+    @abstractmethod
+    def visit_if_stmt(self,stmt:If) -> str:
+        pass
+
+    @abstractmethod
+    def visit_while_stmt(self,stmt:While) -> str:
         pass
 
