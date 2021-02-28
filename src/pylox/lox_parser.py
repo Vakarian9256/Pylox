@@ -27,7 +27,8 @@ class Parser:
         try:
             if self.match(TT.VAR):
                 return self.var_declaration()
-            elif self.match(TT.FUN):
+            if self.check(TT.FUN) and self.check_next(TT.IDENTIFIER):
+                self.consume(TT.FUN, None)
                 return self.function("function")
             return self.statement()
         except Parser.ParseError as error:
@@ -44,6 +45,9 @@ class Parser:
 
     def function(self, kind: str) -> Stmt:
         name = self.consume(TT.IDENTIFIER,f"Expect {kind} name.")
+        return Fun(name, self.function_body(kind))
+
+    def function_body(self, kind: str) -> Function:
         self.consume(TT.LEFT_PAREN,f"Expect '(' after {kind} name.")
         params = []
         if not self.check(TT.RIGHT_PAREN):
@@ -56,7 +60,8 @@ class Parser:
         self.consume(TT.RIGHT_PAREN,"Expect ')' after parameters.")
         self.consume(TT.LEFT_BRACE,"Expect '{ before " + kind + " body.")
         body = self.block_statement()
-        return Fun(name, params, body)
+        return Function(params, body)
+        
 
     def statement(self) -> Stmt:
         if self.match(TT.IF):
@@ -264,6 +269,8 @@ class Parser:
             return Literal(None)
         if self.match(TT.NUMBER, TT.STRING):
             return Literal(self.previous().literal)
+        if self.match(TT.FUN):
+            return self.function_body("function")
         if self.match(TT.LEFT_PAREN):
             expr = self.expression()
             self.consume(TT.RIGHT_PAREN, "Expect ')' after expression.")
@@ -322,6 +329,13 @@ class Parser:
         if self.is_at_end():
             return False
         return self.peek().type_ == type_
+    
+    def check_next(self, type_: TT) -> bool:
+        if self.is_at_end():
+            return False
+        if self.tokens[self.current+1].type_ == TT.EOF:
+            return False
+        return self.tokens[self.current+1].type_ == type_
     
     def is_at_end(self) -> bool:
         return self.peek().type_ == TT.EOF

@@ -37,6 +37,10 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
+    def visit_function_expr(self,expr:Function) -> str:
+        pass
+
+    @abstractmethod
     def visit_call_expr(self,expr:Call) -> str:
         pass
 
@@ -65,14 +69,14 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
+    def visit_return_stmt(self,stmt:Return) -> str:
+        pass
+
+    @abstractmethod
     def visit_while_stmt(self,stmt:While) -> str:
         pass
 
     @abstractmethod
     def visit_break_stmt(self,stmt:Break) -> str:
-        pass
-
-    @abstractmethod
-    def visit_return_stmt(self,stmt:Return) -> str:
         pass
 

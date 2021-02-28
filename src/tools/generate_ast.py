@@ -91,6 +91,7 @@ def main():
                 "Logical |  left: Expr, operator: Token, right: Expr",
                 "Unary | operator: Token, right: Expr",
                 "Variable | name: Token",
+                "Function | params: list[Token], body: list[Any]",
                 "Call | callee: Expr, paren: Token, args: list[Expr]"], visitor_lines)
 
     define_ast(args, "Stmt", [
@@ -99,10 +100,10 @@ def main():
                "Var | name: Token, initializer: Expr",
                "Block | statements: list[Stmt]",
                "If | condition: Expr, then_branch: Stmt, else_branch: Stmt",
-               "Fun | name: Token, params: list[Token], body: list[Stmt]",
+               "Fun | name: Token, function",
+               "Return | keyword: Token, value: Expr",
                "While | condition: Expr, body: Stmt",
-               "Break |",
-               "Return | keyword: Token, value: Expr"], visitor_lines)
+               "Break |"], visitor_lines)
 
     define_visitor(args, visitor_lines)
 

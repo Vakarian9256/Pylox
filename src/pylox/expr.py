@@ -69,6 +69,14 @@ class Variable(Expr):
     def accept(self, visitor) -> str:
         return visitor.visit_variable_expr(self)
 
+class Function(Expr):
+    def __init__(self, params: list[Token], body: list[Any]):
+        self.params = params
+        self.body = body
+
+    def accept(self, visitor) -> str:
+        return visitor.visit_function_expr(self)
+
 class Call(Expr):
     def __init__(self, callee: Expr, paren: Token, args: list[Expr]):
         self.callee = callee

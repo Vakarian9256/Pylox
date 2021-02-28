@@ -44,13 +44,20 @@ class If(Stmt):
         return visitor.visit_if_stmt(self)
 
 class Fun(Stmt):
-    def __init__(self, name: Token, params: list[Token], body: list[Stmt]):
+    def __init__(self, name: Token, function):
         self.name = name
-        self.params = params
-        self.body = body
+        self.function = function
 
     def accept(self, visitor) -> str:
         return visitor.visit_fun_stmt(self)
+
+class Return(Stmt):
+    def __init__(self, keyword: Token, value: Expr):
+        self.keyword = keyword
+        self.value = value
+
+    def accept(self, visitor) -> str:
+        return visitor.visit_return_stmt(self)
 
 class While(Stmt):
     def __init__(self, condition: Expr, body: Stmt):
@@ -66,12 +73,4 @@ class Break(Stmt):
 
     def accept(self, visitor) -> str:
         return visitor.visit_break_stmt(self)
-
-class Return(Stmt):
-    def __init__(self, keyword: Token, value: Expr):
-        self.keyword = keyword
-        self.value = value
-
-    def accept(self, visitor) -> str:
-        return visitor.visit_return_stmt(self)
 

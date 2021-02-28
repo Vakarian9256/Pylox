@@ -63,6 +63,27 @@ class Interpreter(Visitor):
         elif stmt.else_branch is not None:
             self.execute(stmt.else_branch)
 
+    def visit_return_stmt(self, stmt: Return):
+        value = None
+        if stmt.value is not None:
+            value = self.evaluate(stmt.value)
+        raise ReturnException(value)
+
+    def visit_while_stmt(self, loop: While):
+        try:
+            while self.is_truth(self.evaluate(loop.condition)):
+                self.execute(loop.body)
+        except BreakException:
+            pass
+    
+    def visit_break_stmt(self, break_stmt: Break):
+        raise BreakException()
+    
+    def visit_fun_stmt(self, stmt: Fun):
+        f_name = stmt.name.lexeme
+        self.environment.define(f_name, LoxFunction(f_name, stmt.function, self.environment))
+        return None
+
     def visit_variable_expr(self, expr: Variable) -> Any:
         value = self.environment.get(expr.name)
         if value == Interpreter.uninitialized:
@@ -148,6 +169,9 @@ class Interpreter(Visitor):
                 return left
         return self.evaluate(expr.right)
 
+    def visit_function_expr(self, expr: Function) -> str:
+        return LoxFunction(None, expr, self.environment)
+
     def visit_call_expr(self, expr: Call) -> str:
         callee = self.evaluate(expr.callee)
         if not isinstance(callee, LoxCallable):
@@ -156,26 +180,6 @@ class Interpreter(Visitor):
         if len(arguments) != callee.arity():
             raise LoxRunTimeError(expr.paren,f"Expected {callee.arity()} arguments but got {len(arguments)}.")
         return callee.call(self, arguments)
-
-    def visit_return_stmt(self, stmt: Return):
-        value = None
-        if stmt.value is not None:
-            value = self.evaluate(stmt.value)
-        raise ReturnException(value)
-
-    def visit_while_stmt(self, loop: While):
-        try:
-            while self.is_truth(self.evaluate(loop.condition)):
-                self.execute(loop.body)
-        except BreakException:
-            pass
-    
-    def visit_break_stmt(self, break_stmt: Break):
-        raise BreakException()
-    
-    def visit_fun_stmt(self, stmt: Fun):
-        function = LoxFunction(stmt, self.environment)
-        self.environment.define(stmt.name.lexeme, function)
 
     def execute_block(self, statements: list[Stmt], environment: Environment):
         previous_envi = self.environment

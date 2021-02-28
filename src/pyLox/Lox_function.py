@@ -3,9 +3,11 @@ from Lox_callable import *
 from stmt import *
 from environment import Environment
 from error import *
+from expr import Function
 
 class LoxFunction(LoxCallable):
-    def __init__(self, declaration: Fun, closure: Environment):
+    def __init__(self, name: str, declaration: Function, closure: Environment):
+        self.name = name
         self.declaration = declaration
         self.closure = closure
 
@@ -23,5 +25,7 @@ class LoxFunction(LoxCallable):
         return len(self.declaration.params)
 
     def __str__():
-        return f"<function {self.declaration.name.lexeme}>"
+        if self.name is None:
+            return "<function>"
+        return f"<function {self.name}>"
 
