@@ -3,6 +3,7 @@ from visitor import *
 from expr import *
 from token import *
 from token_type import *
+from stmt import *
 
 class AstPrinter(Visitor):
     def __init__(self):
