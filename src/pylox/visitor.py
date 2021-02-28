@@ -13,6 +13,10 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
+    def visit_conditional_expr(self,expr:Conditional) -> str:
+        pass
+
+    @abstractmethod
     def visit_grouping_expr(self,expr:Grouping) -> str:
         pass
 
@@ -21,11 +25,11 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
-    def visit_unary_expr(self,expr:Unary) -> str:
+    def visit_logical_expr(self,expr:Logical) -> str:
         pass
 
     @abstractmethod
-    def visit_conditional_expr(self,expr:Conditional) -> str:
+    def visit_unary_expr(self,expr:Unary) -> str:
         pass
 
     @abstractmethod
@@ -33,7 +37,7 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
-    def visit_logical_expr(self,expr:Logical) -> str:
+    def visit_call_expr(self,expr:Call) -> str:
         pass
 
     @abstractmethod
@@ -57,10 +61,18 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
+    def visit_fun_stmt(self,stmt:Fun) -> str:
+        pass
+
+    @abstractmethod
     def visit_while_stmt(self,stmt:While) -> str:
         pass
 
     @abstractmethod
     def visit_break_stmt(self,stmt:Break) -> str:
+        pass
+
+    @abstractmethod
+    def visit_return_stmt(self,stmt:Return) -> str:
         pass
 

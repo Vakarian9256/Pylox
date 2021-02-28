@@ -2,7 +2,7 @@ import sys
 import argparse
 from error_handler import ErrorHandler
 from scanner import Scanner
-from lox_parser import Parser
+from Lox_parser import Parser
 from ast_printer import AstPrinter
 from interpreter import Interpreter
 from run_mode import RunMode as mode
@@ -41,13 +41,13 @@ class Lox:
 
 
 if __name__ == "__main__":
-    lox = Lox()
+    Lox = Lox()
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("script", nargs='?', type=str , default=None,  
                             help="The path to the source file to be interpreted."+
                             " Path needs to be encapsulated with quotation marks.")
     args = arg_parser.parse_args()
     if args.script is not None:
-        lox.run_file(args.script)
+        Lox.run_file(args.script)
     else:
-        lox.run_prompt()
+        Lox.run_prompt()

@@ -1,10 +1,10 @@
 import sys
 from typing import Any
 from token import Token
-from runtime_error import LoxRunTimeError
+from error import LoxRunTimeError
 class Environment:
     def __init__(self, enclosing=None):
-        self.enclosing = enclosing if enclosing is not None else None
+        self.enclosing = enclosing if (enclosing is not None) else None
         self.dict = {}
 
     def define(self, name: str, value: Any):

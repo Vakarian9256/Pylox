@@ -28,11 +28,11 @@ def define_type(outf, base_name: str, type_name: list[str], type_fields: list[st
         outf.write(f"    def __init__(self")
         if not type_fields:
             fields = ""
-            outf.write("):")
+            outf.write("):\n")
+            outf.write("        pass\n")
         else:
-            outf.write(f", {type_fields}):")
+            outf.write(f", {type_fields}):\n")
             fields = type_fields.split(", ")
-        outf.write("\n")
         for field in fields:
             field = field.split(":")
             field_name = field[0].strip()
@@ -85,12 +85,13 @@ def main():
     define_ast(args, "Expr",
                ["Asign | name: Token, value: Expr",
                 "Binary | left: Expr, operator: Token,  right: Expr",
-               "Grouping | expression: Expr",
-               "Literal | value: Any",
-               "Unary | operator: Token, right: Expr",
-               "Conditional | condition: Expr, left: Expr, right: Expr",
-               "Variable | name: Token",
-               "Logical |  left: Expr, operator: Token, right: Expr"], visitor_lines)
+                "Conditional | condition: Expr, left: Expr, right: Expr",
+                "Grouping | expression: Expr",
+                "Literal | value: Any",
+                "Logical |  left: Expr, operator: Token, right: Expr",
+                "Unary | operator: Token, right: Expr",
+                "Variable | name: Token",
+                "Call | callee: Expr, paren: Token, args: list[Expr]"], visitor_lines)
 
     define_ast(args, "Stmt", [
                "Expression | expr: Expr",
@@ -98,8 +99,10 @@ def main():
                "Var | name: Token, initializer: Expr",
                "Block | statements: list[Stmt]",
                "If | condition: Expr, then_branch: Stmt, else_branch: Stmt",
+               "Fun | name: Token, params: list[Token], body: list[Stmt]",
                "While | condition: Expr, body: Stmt",
-               "Break |"], visitor_lines)
+               "Break |",
+               "Return | keyword: Token, value: Expr"], visitor_lines)
 
     define_visitor(args, visitor_lines)
 

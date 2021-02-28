@@ -27,6 +27,8 @@ class Parser:
         try:
             if self.match(TT.VAR):
                 return self.var_declaration()
+            elif self.match(TT.FUN):
+                return self.function("function")
             return self.statement()
         except Parser.ParseError as error:
             self.synchronize()
@@ -40,6 +42,22 @@ class Parser:
         self.consume(TT.SEMICOLON, "Expect semicolon after variable declaration.")
         return Var(name, initializer)
 
+    def function(self, kind: str) -> Stmt:
+        name = self.consume(TT.IDENTIFIER,f"Expect {kind} name.")
+        self.consume(TT.LEFT_PAREN,f"Expect '(' after {kind} name.")
+        params = []
+        if not self.check(TT.RIGHT_PAREN):
+            while True:
+                if len(params) >= 255:
+                    self.error(self.peek(),"Can't have more than 255 parameters.")
+                params.append(self.consume(TT.IDENTIFIER,"Expect parameter name."))
+                if not self.match(TT.COMMA):
+                    break
+        self.consume(TT.RIGHT_PAREN,"Expect ')' after parameters.")
+        self.consume(TT.LEFT_BRACE,"Expect '{ before " + kind + " body.")
+        body = self.block_statement()
+        return Fun(name, params, body)
+
     def statement(self) -> Stmt:
         if self.match(TT.IF):
             return self.if_statement()
@@ -51,6 +69,8 @@ class Parser:
             return self.break_statement()
         if self.match(TT.PRINT):
             return self.print_statement()
+        if self.match(TT.RETURN):
+            return self.return_statement()
         if self.match(TT.LEFT_BRACE):
             return Block(self.block_statement())
         return self.expression_statement()
@@ -62,7 +82,7 @@ class Parser:
 
     def block_statement(self) -> list[Stmt]:
         statements = []
-        while not self.check(TT.RIGHT_BRACE) and not self.is_at_end():
+        while (not self.check(TT.RIGHT_BRACE)) and not self.is_at_end():
             statements.append(self.declaration())
         self.consume(TT.RIGHT_BRACE,"Expect '}' after block.")
         return statements
@@ -128,6 +148,14 @@ class Parser:
         self.consume(TT.SEMICOLON,"Expect ';' after break.")
         return Break()
 
+    def return_statement(self) -> Return:
+        keyword = self.previous()
+        value = None
+        if not self.check(TT.SEMICOLON):
+            value = self.expression()
+        self.consume(TT.SEMICOLON,"Expect ';' after return value.")
+        return Return(keyword,value)
+
     def expression(self) -> Expr:
         return self.comma_op()
 
@@ -179,8 +207,6 @@ class Parser:
             expr = Logical(expr, operator, right)
         return expr
 
-
-
     def equality(self) -> Expr:
         expr = self.comparison()
         while self.match(TT.BANG_EQUAL, TT.EQUAL_EQUAL):
@@ -218,7 +244,16 @@ class Parser:
             operator = self.previous()
             right = self.unary()
             return Unary(operator, right)
-        return self.primary()
+        return self.call()
+
+    def call(self) -> Expr:
+        expr = self.primary()
+        while True:
+            if self.match(TT.LEFT_PAREN):
+                expr = self.finish_call(expr)
+            else:
+                break   
+        return expr
 
     def primary(self) -> Expr:
         if self.match(TT.TRUE):
@@ -261,6 +296,20 @@ class Parser:
             self.factor()
             return None
         self.error_handler.error_on_token(self.peek(), "Expect expression.")
+
+    def finish_call(self, callee: Call) -> Expr:
+        arguments = []
+        if not self.check(TT.RIGHT_PAREN):
+            while True:
+                if len(arguments) >= 255:
+                    self.error(self.peek(), "Cant have more than 255 arguments. ")
+                arguments.append(self.conditional())
+                if not self.match(TT.COMMA):
+                    break
+        paren = self.consume(TT.RIGHT_PAREN,"Expect ')' after arguments.")
+        return Call(callee, paren, arguments)
+        
+
 
     def match(self, *types) -> bool:
         for type_ in types:

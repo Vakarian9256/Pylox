@@ -1,6 +1,8 @@
 import decimal
 import sys
 import operator
+from native import Clock
+from typing import Any
 from visitor import Visitor
 from expr import *
 from token_type import TokenType as TT
@@ -9,6 +11,8 @@ from error_handler import ErrorHandler
 from stmt import *
 from environment import Environment
 from run_mode import RunMode
+from Lox_callable import LoxCallable
+from Lox_function import LoxFunction
 
 class Interpreter(Visitor):
 
@@ -16,7 +20,9 @@ class Interpreter(Visitor):
 
     def __init__(self, error_handler: ErrorHandler):
         self.error_handler = error_handler
-        self.environment = Environment()
+        self.globals = Environment()
+        self.environment = self.globals
+        self.globals.define('clock', Clock())
 
     def interpret(self, statements: list[Stmt], mode: RunMode):
         try:
@@ -52,9 +58,9 @@ class Interpreter(Visitor):
         self.execute_block(stmt.statements, Environment(self.environment))
 
     def visit_if_stmt(self, stmt: If):
-        if self.is_truth(stmt.condition):
+        if self.is_truth(self.evaluate(stmt.condition)):
             self.execute(stmt.then_branch)
-        elif not self.is_truth(stmt.condition):
+        elif stmt.else_branch is not None:
             self.execute(stmt.else_branch)
 
     def visit_variable_expr(self, expr: Variable) -> Any:
@@ -142,6 +148,21 @@ class Interpreter(Visitor):
                 return left
         return self.evaluate(expr.right)
 
+    def visit_call_expr(self, expr: Call) -> str:
+        callee = self.evaluate(expr.callee)
+        if not isinstance(callee, LoxCallable):
+            raise LoxRunTimeError(expr.paren,"Can only call functions and classes." )
+        arguments = [self.evaluate(argument) for argument in expr.args]
+        if len(arguments) != callee.arity():
+            raise LoxRunTimeError(expr.paren,f"Expected {callee.arity()} arguments but got {len(arguments)}.")
+        return callee.call(self, arguments)
+
+    def visit_return_stmt(self, stmt: Return):
+        value = None
+        if stmt.value is not None:
+            value = self.evaluate(stmt.value)
+        raise ReturnException(value)
+
     def visit_while_stmt(self, loop: While):
         try:
             while self.is_truth(self.evaluate(loop.condition)):
@@ -152,6 +173,10 @@ class Interpreter(Visitor):
     def visit_break_stmt(self, break_stmt: Break):
         raise BreakException()
     
+    def visit_fun_stmt(self, stmt: Fun):
+        function = LoxFunction(stmt, self.environment)
+        self.environment.define(stmt.name.lexeme, function)
+
     def execute_block(self, statements: list[Stmt], environment: Environment):
         previous_envi = self.environment
         try:
@@ -200,7 +225,7 @@ class Interpreter(Visitor):
 
     def legal_divisor(self, operator: Token, divisor: decimal.Decimal) -> bool:
         if divisor == 0:
-            raise LoxRunTimeError(operator, "Divisor must not be zero.")
+            raise DivisionByZeroError(operator)
             return False
         return True
 

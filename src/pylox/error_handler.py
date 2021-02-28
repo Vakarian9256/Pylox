@@ -1,7 +1,7 @@
 import sys
 from token import Token
 from token_type import TokenType as TT
-from runtime_error import LoxRunTimeError
+from error import LoxRunTimeError
 
 class ErrorHandler:
     def __init__(self):
