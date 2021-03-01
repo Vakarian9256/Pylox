@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Any
 from token import Token 
 from function_types import FunctionType
+from var_state import VarState
+
 class Expr:
     pass
 
@@ -63,8 +65,9 @@ class Unary(Expr):
         return visitor.visit_unary_expr(self)
 
 class Variable(Expr):
-    def __init__(self, name: Token):
+    def __init__(self, name: Token, state=None):
         self.name = name
+        self.state = state
 
     def accept(self, visitor) -> str:
         return visitor.visit_variable_expr(self)

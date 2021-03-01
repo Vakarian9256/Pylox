@@ -14,6 +14,7 @@ from environment import Environment
 from run_mode import RunMode
 from Lox_callable import LoxCallable
 from Lox_function import LoxFunction
+from var_state import VarState
 
 class Interpreter(Visitor):
 
@@ -29,14 +30,13 @@ class Interpreter(Visitor):
               TokenType.EQUAL_EQUAL : operator.eq,
               TokenType.BANG_EQUAL : operator.ne
              }
-    globals = Environment()
-    locals = {}
-
 
     def __init__(self, error_handler: ErrorHandler):
         self.error_handler = error_handler
-        self.environment = Interpreter.globals
+        self.globals = Environment()
+        self.environment = self.globals
         self.globals.define('clock', Clock())
+        self.locals = {}
 
     def interpret(self, statements: list[Stmt], mode: RunMode):
         try:
@@ -56,7 +56,7 @@ class Interpreter(Visitor):
         statement.accept(self)
     
     def resolve(self, expr: Expr, depth: int):
-        Interpreter.locals[expr] = depth
+        self.locals[expr] = depth
     
     def visit_var_stmt(self, stmt: Var):
         value = Interpreter.uninitialized
@@ -106,10 +106,10 @@ class Interpreter(Visitor):
 
     def visit_assign_expr(self, expr: Assign) -> Any:
         value = self.evaluate(expr.value)
-        if expr in Interpreter.locals:
-            self.environment.assign_at(Interpreter.locals[expr], expr.name, value)
+        if expr in self.locals:
+            self.environment.assign_at(self.locals[expr], expr.name, value)
         else:
-            Interpreter.globals.assign(expr.name, value)
+            self.globals.assign(expr.name, value)
         return value
 
     def visit_literal_expr(self, expr: Literal) -> str:
@@ -218,10 +218,10 @@ class Interpreter(Visitor):
         return True
 
     def look_up_variable(self, name: Token, expr: Expr) -> Any:
-        if expr in Interpreter.locals:
-            value = self.environment.get_at(Interpreter.locals[expr], name.lexeme)
+        if expr in self.locals:
+            value = self.environment.get_at(self.locals[expr], name.lexeme)
         else:
-            value = Interpreter.globals.get(name)
+            value = self.globals.get(name)
         if value == Interpreter.uninitialized:
             raise LoxRunTimeError(name, "Variable must be initialized before use.")
         return value

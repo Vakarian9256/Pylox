@@ -1,4 +1,3 @@
 from enum import Enum
 
-FunctionType = Enum("FunctionType", "NONE \
-               FUNCTION")
+FunctionType = Enum("FunctionType", "NONE FUNCTION")
