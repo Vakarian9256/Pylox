@@ -1,7 +1,7 @@
 import sys
 from decimal import Decimal
 from token import Token
-from token_type import TokenType
+from token_type import TokenType as TT
 from error_handler import ErrorHandler
 from collections import namedtuple
 
@@ -19,43 +19,43 @@ class Scanner:
         self.line = 1
 
         self.keywords = { 
-            "and" : TokenType.AND,
-            "break" : TokenType.BREAK,
-            "class" : TokenType.CLASS,
-            "else" : TokenType.ELSE,
-            "false" : TokenType.FALSE,
-            "for" : TokenType.FOR,
-            "fun" : TokenType.FUN,
-            "if" : TokenType.IF,
-            "nil" : TokenType.NIL,
-            "or" : TokenType.OR,
-            "print" : TokenType.PRINT,
-            "return" : TokenType.RETURN,
-            "super" : TokenType.SUPER,
-            "this" : TokenType.THIS,
-            "true" : TokenType.TRUE,
-            "var" : TokenType.VAR,
-            "while" : TokenType.WHILE
+            "and" : TT.AND,
+            "break" : TT.BREAK,
+            "class" : TT.CLASS,
+            "else" : TT.ELSE,
+            "false" : TT.FALSE,
+            "for" : TT.FOR,
+            "fun" : TT.FUN,
+            "if" : TT.IF,
+            "nil" : TT.NIL,
+            "or" : TT.OR,
+            "print" : TT.PRINT,
+            "return" : TT.RETURN,
+            "super" : TT.SUPER,
+            "this" : TT.THIS,
+            "true" : TT.TRUE,
+            "var" : TT.VAR,
+            "while" : TT.WHILE
             }
 
         self.double_keys = {
-            "!" : DoubleToken(TokenType.BANG, TokenType.BANG_EQUAL),
-            "=" : DoubleToken(TokenType.EQUAL, TokenType.EQUAL_EQUAL),
-            "<" : DoubleToken(TokenType.LESS, TokenType.LESS_EQUAL),
-            ">" : DoubleToken(TokenType.GREATER, TokenType.GREATER_EQUAL)
+            "!" : DoubleToken(TT.BANG, TT.BANG_EQUAL),
+            "=" : DoubleToken(TT.EQUAL, TT.EQUAL_EQUAL),
+            "<" : DoubleToken(TT.LESS, TT.LESS_EQUAL),
+            ">" : DoubleToken(TT.GREATER, TT.GREATER_EQUAL)
             }
 
         self.single_keys = {
-            "(" : TokenType.LEFT_PAREN,
-            ")" : TokenType.RIGHT_PAREN,
-            "{" : TokenType.LEFT_BRACE,
-            "}" : TokenType.RIGHT_BRACE,
-            "," : TokenType.COMMA,
-            "." : TokenType.DOT,
-            "-" : TokenType.MINUS,
-            "+" : TokenType.PLUS,
-            ";" : TokenType.SEMICOLON,
-            "*" : TokenType.STAR
+            "(" : TT.LEFT_PAREN,
+            ")" : TT.RIGHT_PAREN,
+            "{" : TT.LEFT_BRACE,
+            "}" : TT.RIGHT_BRACE,
+            "," : TT.COMMA,
+            "." : TT.DOT,
+            "-" : TT.MINUS,
+            "+" : TT.PLUS,
+            ";" : TT.SEMICOLON,
+            "*" : TT.STAR
             }
     
     def scan_tokens(self) -> list[Token]:
@@ -63,7 +63,7 @@ class Scanner:
             self.start = self.current
             self.scan_token()
         
-        self.tokens.append(Token(TokenType.EOF, "", None, self.line))
+        self.tokens.append(Token(TT.EOF, "", None, self.line))
         return self.tokens
 
     def is_at_end(self) -> bool:
@@ -85,7 +85,7 @@ class Scanner:
                 while self.peek() != '\n' and not self.is_at_end():
                     self.advance()
             else:
-                self.add_token(TokenType.SLASH)
+                self.add_token(TT.SLASH)
         elif char == '?':
             self.add_conditional()
         elif char in ['', '\r', '\t', ' ']:
@@ -106,7 +106,7 @@ class Scanner:
         self.current += 1
         return char
     
-    def add_token(self, type_: TokenType, literal=None):
+    def add_token(self, type_: TT, literal=None):
         text = self.source[self.start:self.current]
         self.tokens.append(Token(type_, text, literal, self.line))
 
@@ -133,7 +133,7 @@ class Scanner:
             return None
         self.advance()
         value = self.source[self.start+1:self.current-1]
-        self.add_token(TokenType.STRING, value)
+        self.add_token(TT.STRING, value)
 
     def is_digit(self, char: chr ) -> bool:
         return char >= '0' and char <= '9'
@@ -146,7 +146,7 @@ class Scanner:
             self.advance()
             while self.is_digit(self.peek()):
                 self.advance()
-        self.add_token(TokenType.NUMBER, Decimal(self.source[self.start:self.current]))
+        self.add_token(TT.NUMBER, Decimal(self.source[self.start:self.current]))
 
     def peek_next(self) -> chr:
         if self.current + 1 >= len(self.source):
@@ -164,7 +164,7 @@ class Scanner:
             self.advance()
         
         text = self.source[self.start:self.current]
-        type_ = TokenType.IDENTIFIER
+        type_ = TT.IDENTIFIER
         if text in self.keywords:
             type_ = self.keywords[text]
         self.add_token(type_)
@@ -189,7 +189,7 @@ class Scanner:
             self.advance()
 
     def add_conditional(self):
-        self.add_token(TokenType.QUESTION)
+        self.add_token(TT.QUESTION)
         while not self.match(':'):
             if self.is_at_end():
                 self.error_handler.error(self.line, " Expect ':' seperator after then branch in ternary conditional.")
@@ -197,7 +197,7 @@ class Scanner:
             self.start = self.current
             self.scan_token()
         self.current -= 1
-        self.add_token(TokenType.COLON)
+        self.add_token(TT.COLON)
         self.advance()
             
         

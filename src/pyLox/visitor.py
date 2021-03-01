@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from stmt import Stmt, Expression, Print, Var, Block, If, While, Fun, Return, Break
-from expr import Expr, Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call
+from stmt import Expression, Print, Var, Block, If, While, Fun, Return, Break
+from expr import Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call
 
 
 class Visitor(ABC):
