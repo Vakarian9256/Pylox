@@ -1,14 +1,15 @@
 import sys
 from decimal import Decimal
 import operator
-from native import Clock
 from typing import Any
+from native import Clock
 from visitor import Visitor
-from expr import *
-from token_type import TokenType as TT
-from error import *
+from stmt import Stmt, Expression, Print, Var, Block, If, While, Fun, Return, Break
+from expr import Expr, Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call
+from token_type import TokenType
+from token import Token
+from error import LoxRunTimeError, DivisionByZeroError, ReturnException, BreakException
 from error_handler import ErrorHandler
-from stmt import *
 from environment import Environment
 from run_mode import RunMode
 from Lox_callable import LoxCallable
@@ -18,22 +19,23 @@ class Interpreter(Visitor):
 
     uninitialized = object()
     op_dic = {
-              TT.LESS : operator.lt,
-              TT.LESS_EQUAL: operator.le,
-              TT.GREATER : operator.gt,
-              TT.GREATER_EQUAL : operator.ge,
-              TT.MINUS : operator.sub,
-              TT.SLASH : operator.truediv,
-              TT.STAR : operator.mul,
-              TT.EQUAL_EQUAL : operator.eq,
-              TT.BANG_EQUAL : operator.ne
+              TokenType.LESS : operator.lt,
+              TokenType.LESS_EQUAL: operator.le,
+              TokenType.GREATER : operator.gt,
+              TokenType.GREATER_EQUAL : operator.ge,
+              TokenType.MINUS : operator.sub,
+              TokenType.SLASH : operator.truediv,
+              TokenType.STAR : operator.mul,
+              TokenType.EQUAL_EQUAL : operator.eq,
+              TokenType.BANG_EQUAL : operator.ne
              }
+    globals = Environment()
+    locals = {}
 
 
     def __init__(self, error_handler: ErrorHandler):
         self.error_handler = error_handler
-        self.globals = Environment()
-        self.environment = self.globals
+        self.environment = Interpreter.globals
         self.globals.define('clock', Clock())
 
     def interpret(self, statements: list[Stmt], mode: RunMode):
@@ -44,7 +46,7 @@ class Interpreter(Visitor):
             self.error_handler.runtime_error(error)
 
     def execute_by_mode(self, statement: Stmt, mode: RunMode):
-        if mode == RunMode.REPL and type(statement) is Expression and type(statement.expr) is not Asign:
+        if mode == RunMode.REPL and type(statement) is Expression and type(statement.expr) is not Assign:
                 value = self.evaluate(statement.expr)
                 print(self.stringify(value))
         else:
@@ -52,6 +54,9 @@ class Interpreter(Visitor):
 
     def execute(self, statement: Stmt):
         statement.accept(self)
+    
+    def resolve(self, expr: Expr, depth: int):
+        Interpreter.locals[expr] = depth
     
     def visit_var_stmt(self, stmt: Var):
         value = Interpreter.uninitialized
@@ -97,14 +102,14 @@ class Interpreter(Visitor):
         return None
 
     def visit_variable_expr(self, expr: Variable) -> Any:
-        value = self.environment.get(expr.name)
-        if value == Interpreter.uninitialized:
-            raise LoxRunTimeError(expr.name, "Variable must be initialized before use.")
-        return value
+        return self.look_up_variable(expr.name, expr)
 
-    def visit_asign_expr(self, expr: Asign) -> Any:
+    def visit_assign_expr(self, expr: Assign) -> Any:
         value = self.evaluate(expr.value)
-        self.environment.assign(expr.name, value)
+        if expr in Interpreter.locals:
+            self.environment.assign_at(Interpreter.locals[expr], expr.name, value)
+        else:
+            Interpreter.globals.assign(expr.name, value)
         return value
 
     def visit_literal_expr(self, expr: Literal) -> str:
@@ -115,25 +120,25 @@ class Interpreter(Visitor):
     
     def visit_unary_expr(self, expr: Unary) -> str:
         right = self.evaluate(expr.right)
-        if expr.operator.type_ == TT.MINUS:
+        if expr.operator.type_ == TokenType.MINUS:
             return -Decimal(right)
-        if expr.operator.type_ == TT.BANG:
+        if expr.operator.type_ == TokenType.BANG:
             return not self.is_truth(right)
 
     def visit_binary_expr(self, expr: Binary) -> str:
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
-        if expr.operator.type_ == TT.MINUS:
+        if expr.operator.type_ == TokenType.MINUS:
             self.check_number_operand(expr.operator, left, right)
             return Decimal(left) - Decimal(right)
-        elif expr.operator.type_ == TT.STAR:
+        elif expr.operator.type_ == TokenType.STAR:
             self.check_number_operand(expr.operator, left, right)
             return Decimal(left) * Decimal(right)
-        elif expr.operator.type_ == TT.SLASH:
+        elif expr.operator.type_ == TokenType.SLASH:
             if self.legal_divisor(expr.operator, right):
                 self.check_number_operand(expr.operator, left, right)
                 return Decimal(left) / Decimal(right)
-        elif expr.operator.type_ == TT.PLUS:
+        elif expr.operator.type_ == TokenType.PLUS:
             '''
             Notice that because of Pythons dynamic typing, we didnt have to check for types,
             but we did so for learning purposes
@@ -147,7 +152,7 @@ class Interpreter(Visitor):
                 op_func = Interpreter.op_dic[expr.operator.type_]
                 self.check_comparison_operands(expr.operator, left, right)
                 return op_func(left, right)
-        elif expr.operator.type_ == TT.COMMA:
+        elif expr.operator.type_ == TokenType.COMMA:
             return right
         return None
 
@@ -161,7 +166,7 @@ class Interpreter(Visitor):
         
     def visit_logical_expr(self, expr: Logical) -> str:
         left = self.evaluate(expr.left)
-        if expr.operator.type_ == TT.OR:
+        if expr.operator.type_ == TokenType.OR:
             if self.is_truth(left):
                 return left
         else:
@@ -211,6 +216,12 @@ class Interpreter(Visitor):
         if type(expression) is bool:
             return expression
         return True
+
+    def look_up_variable(self, name: Token, expr: Expr) -> Any:
+        if expr in Interpreter.locals:
+            return self.environment.get_at(Interpreter.locals[expr], name.lexeme)
+        else:
+            return Interpreter.globals.get(name)
     
     def check_number_operand(self, operator: Token, *args):
         for arg in args:

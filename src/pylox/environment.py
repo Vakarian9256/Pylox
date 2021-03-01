@@ -12,10 +12,9 @@ class Environment:
 
     def assign(self, name: Token, value: Any):
         if name.lexeme in self.var_map:
-            self.define(name.lexeme, value)
+            self.var_map[name.lexeme] = value
         elif self.enclosing is not None:
             self.enclosing.assign(name, value)
-            return
         else:
             raise LoxRunTimeError(name, f"Undefined variable {name.lexeme}.")
 
@@ -35,7 +34,7 @@ class Environment:
 
     def ancestor(self, distance: int):
         env = self
-        for i in range(0,distance):
+        for i in range(distance):
             env = env.enclosing
         return env
 
