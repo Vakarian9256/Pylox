@@ -1,9 +1,10 @@
 import sys
-from Lox_callable import *
-from stmt import *
-from environment import Environment
-from error import *
+from typing import Any
+from Lox_callable import LoxCallable
+from stmt import Expression, Print, Var, Block, If, While, Fun, Return, Break
 from expr import Function
+from environment import Environment
+from error import ReturnException
 
 class LoxFunction(LoxCallable):
     def __init__(self, name: str, declaration: Function, closure: Environment):

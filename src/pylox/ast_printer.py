@@ -1,9 +1,9 @@
 
-from visitor import *
-from expr import *
-from token import *
-from token_type import *
-from stmt import *
+from visitor import Visitor
+from token import Token
+from token_type import TokenType
+from stmt import Expression, Print, Var, If, While, Fun, Return, Break
+from expr import Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call
 
 class AstPrinter(Visitor):
     def __init__(self):

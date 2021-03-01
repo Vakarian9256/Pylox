@@ -1,4 +1,3 @@
-import enum
-
-RunMode = enum.Enum("RunMode", "REPL \
+from enum import Enum
+RunMode = Enum("RunMode", "REPL \
                     FILE")

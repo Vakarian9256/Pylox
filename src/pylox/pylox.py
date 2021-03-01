@@ -1,11 +1,12 @@
 import sys
 import argparse
+from run_mode import RunMode as mode
 from error_handler import ErrorHandler
 from scanner import Scanner
 from Lox_parser import Parser
-from ast_printer import AstPrinter
 from interpreter import Interpreter
-from run_mode import RunMode as mode
+from resolver import Resolver
+
 
 class Lox:
     def __init__(self):
@@ -34,6 +35,10 @@ class Lox:
         statements = parser.parse()
         if self.error_handler.had_error == True:
             return 
+        resolver = Resolver(self.interpreter, self.error_handler)
+        resolver.resolve_list(statements)
+        if self.error_handler.had_error == True:
+            return
         self.interpreter.interpret(statements, mode)
 
 
