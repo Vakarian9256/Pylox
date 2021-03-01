@@ -53,8 +53,9 @@ class Resolver(Visitor):
         self.resolve(stmt.body)
     
     def visit_variable_expr(self, expr: Variable):
-        if len(self.scopes) != 0 and expr.name.lexeme in self.scopes[-1] == False:
-            self.error_handler.error(expr.name, "Cant read local variable in its own initializer.")
+        if self.scopes and expr.name.lexeme in self.scopes[-1]:
+            if self.scopes[-1][expr.name.lexeme] == False:
+                self.error_handler.error_on_token(expr.name, "Cant read local variable in its own initializer.")
         self.resolve_local(expr, expr.name)
 
     def visit_break_stmt(self, stmt: Break):
@@ -129,7 +130,7 @@ class Resolver(Visitor):
             return None
         peek = self.scopes[-1]
         if name.lexeme in peek:
-            self.error_handler.error(name,"Variable with this name has already been declared in this scope.")
+            self.error_handler.error_on_token(name,"Variable with this name has already been declared in this scope.")
         peek[name.lexeme] = False
     
     def define(self, name: Token):
