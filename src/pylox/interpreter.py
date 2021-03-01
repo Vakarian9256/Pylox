@@ -1,5 +1,5 @@
-import decimal
 import sys
+from decimal import Decimal
 import operator
 from native import Clock
 from typing import Any
@@ -17,6 +17,18 @@ from Lox_function import LoxFunction
 class Interpreter(Visitor):
 
     uninitialized = object()
+    op_dic = {
+              TT.LESS : operator.lt,
+              TT.LESS_EQUAL: operator.le,
+              TT.GREATER : operator.gt,
+              TT.GREATER_EQUAL : operator.ge,
+              TT.MINUS : operator.sub,
+              TT.SLASH : operator.truediv,
+              TT.STAR : operator.mul,
+              TT.EQUAL_EQUAL : operator.eq,
+              TT.BANG_EQUAL : operator.ne
+             }
+
 
     def __init__(self, error_handler: ErrorHandler):
         self.error_handler = error_handler
@@ -104,7 +116,7 @@ class Interpreter(Visitor):
     def visit_unary_expr(self, expr: Unary) -> str:
         right = self.evaluate(expr.right)
         if expr.operator.type_ == TT.MINUS:
-            return -decimal.Decimal(right)
+            return -Decimal(right)
         if expr.operator.type_ == TT.BANG:
             return not self.is_truth(right)
 
@@ -113,38 +125,26 @@ class Interpreter(Visitor):
         right = self.evaluate(expr.right)
         if expr.operator.type_ == TT.MINUS:
             self.check_number_operand(expr.operator, left, right)
-            return decimal.Decimal(left) - decimal.Decimal(right)
+            return Decimal(left) - Decimal(right)
         elif expr.operator.type_ == TT.STAR:
             self.check_number_operand(expr.operator, left, right)
-            return decimal.Decimal(left) * decimal.Decimal(right)
+            return Decimal(left) * Decimal(right)
         elif expr.operator.type_ == TT.SLASH:
             if self.legal_divisor(expr.operator, right):
                 self.check_number_operand(expr.operator, left, right)
-                return decimal.Decimal(left) / decimal.Decimal(right)
+                return Decimal(left) / Decimal(right)
         elif expr.operator.type_ == TT.PLUS:
             '''
             Notice that because of Pythons dynamic typing, we didnt have to check for types,
             but we did so for learning purposes
             '''
-            if type(left) is decimal.Decimal and type(right) is decimal.Decimal:
-                return decimal.Decimal(left) + decimal.Decimal(right)
+            if type(left) is Decimal and type(right) is Decimal:
+                return Decimal(left) + Decimal(right)
             elif type(left) is str or type(right) is str:
                 return self.stringify(left)+self.stringify(right)
             raise LoxRunTimeError(expr.operator, "Operands must either strings or numbers.")
-        elif expr.operator.type_ in (TT.GREATER, TT.GREATER_EQUAL, TT.LESS, TT.LESS_EQUAL, TT.BANG_EQUAL,
-                TT.EQUAL_EQUAL):
-                op_dic = {
-                        TT.LESS : operator.lt,
-                        TT.LESS_EQUAL: operator.le,
-                        TT.GREATER : operator.gt,
-                        TT.GREATER_EQUAL : operator.ge,
-                        TT.MINUS : operator.sub,
-                        TT.SLASH : operator.truediv,
-                        TT.STAR : operator.mul,
-                        TT.EQUAL_EQUAL : operator.eq,
-                        TT.BANG_EQUAL : operator.ne
-                        }
-                op_func = op_dic[expr.operator.type_]
+        elif expr.operator.type_ in Interpreter.op_dic:
+                op_func = Interpreter.op_dic[expr.operator.type_]
                 self.check_comparison_operands(expr.operator, left, right)
                 return op_func(left, right)
         elif expr.operator.type_ == TT.COMMA:
@@ -200,7 +200,7 @@ class Interpreter(Visitor):
         for arg in args:
             if type(arg) is not str:
                 all_string = False
-            if type(arg) is not decimal.Decimal:
+            if type(arg) is not Decimal:
                 all_num = False
         if all_num == False and all_string == False:
             raise LoxRunTimeError(operator, "Operands must all be of the same type.")
@@ -214,20 +214,20 @@ class Interpreter(Visitor):
     
     def check_number_operand(self, operator: Token, *args):
         for arg in args:
-            if type(arg) is not decimal.Decimal:
+            if type(arg) is not Decimal:
                 raise LoxRunTimeError(operator, "Operands must be numbers.")
     
     def stringify(self, value: any) -> str:
         if value is None:
             return "nil"
-        if type(value) is decimal.Decimal:
+        if type(value) is Decimal:
             text = str(value)
             if text.endswith(".0"):
                 text = text[0:len(text)-2]
             return text
         return str(value)
 
-    def legal_divisor(self, operator: Token, divisor: decimal.Decimal) -> bool:
+    def legal_divisor(self, operator: Token, divisor: Decimal) -> bool:
         if divisor == 0:
             raise DivisionByZeroError(operator)
             return False
