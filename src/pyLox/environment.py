@@ -2,6 +2,8 @@ import sys
 from typing import Any
 from token import Token
 from error import LoxRunTimeError
+from var_state import VarState
+
 class Environment:
     def __init__(self, enclosing=None):
         self.enclosing = enclosing

@@ -18,7 +18,7 @@ class ErrorHandler:
             self.report(token.line, f" at '{token.lexeme}'", message)
 
     def runtime_error(self, error: LoxRunTimeError):
-        print(f"[line {error.token.line}] Error at '{error.token.lexeme}' : {str(error)}\n")
+        print(f"[line {error.token.line}] Error at '{error.token.lexeme}' : {str(error)}")
         self.had_runtime_error = True
         
     def report(self, line: int, where: str, message: str):
