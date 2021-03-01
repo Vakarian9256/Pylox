@@ -219,9 +219,12 @@ class Interpreter(Visitor):
 
     def look_up_variable(self, name: Token, expr: Expr) -> Any:
         if expr in Interpreter.locals:
-            return self.environment.get_at(Interpreter.locals[expr], name.lexeme)
+            value = self.environment.get_at(Interpreter.locals[expr], name.lexeme)
         else:
-            return Interpreter.globals.get(name)
+            value = Interpreter.globals.get(name)
+        if value == Interpreter.uninitialized:
+            raise LoxRunTimeError(name, "Variable must be initialized before use.")
+        return value
     
     def check_number_operand(self, operator: Token, *args):
         for arg in args:
