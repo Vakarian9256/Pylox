@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 from token import Token 
-from function_types import FunctionType
+from function_type import FunctionType
 from var_state import VarState
 
 class Expr:
@@ -90,3 +90,26 @@ class Call(Expr):
     def accept(self, visitor) -> str:
         return visitor.visit_call_expr(self)
 
+class Get(Expr):
+    def __init__(self, obj: Expr, name: Token):
+        self.obj = obj
+        self.name = name
+    
+    def accept(self, visitor) -> str:
+        return visitor.visit_get_expr(self)
+
+class Set(Expr):
+    def __init__(self, obj: Expr, name: Token, value: Expr):
+        self.obj = obj
+        self.name = name
+        self.value = value
+    
+    def accept(self, visitor) -> str:
+        return visitor.visit_set_expr(self)
+
+class This(Expr):
+    def __init__(self, keyword: Token):
+        self.keyword = keyword
+    
+    def accept(self, visitor) -> str:
+        return visitor.visit_this_expr(self)

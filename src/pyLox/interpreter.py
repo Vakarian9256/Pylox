@@ -4,8 +4,8 @@ import operator
 from typing import Any
 from native import Clock
 from visitor import Visitor
-from stmt import Stmt, Expression, Print, Var, Block, If, While, Fun, Return, Break
-from expr import Expr, Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call
+from stmt import *
+from expr import *
 from token_type import TokenType
 from token import Token
 from error import LoxRunTimeError, DivisionByZeroError, ReturnException, BreakException
@@ -15,6 +15,8 @@ from run_mode import RunMode
 from Lox_callable import LoxCallable
 from Lox_function import LoxFunction
 from var_state import VarState
+from Lox_class import LoxClass
+from Lox_instance import LoxInstance
 
 class Interpreter(Visitor):
 
@@ -85,6 +87,18 @@ class Interpreter(Visitor):
         if stmt.value is not None:
             value = self.evaluate(stmt.value)
         raise ReturnException(value)
+
+    def visit_class_stmt(self, stmt: Class):
+        self.environment.define(stmt.name.lexeme, None)
+        methods = {}
+        for method in stmt.methods:
+            function = LoxFunction(method, method.function, self.environment, method.name.lexeme == 'init')
+            methods[method.name.lexeme] = function
+        klass = LoxClass(stmt.name.lexeme, methods)
+        self.environment.assign(stmt.name, klass)
+
+    def visit_this_expr(self, expr: This):
+        return self.look_up_variable(expr.keyword, expr)
 
     def visit_while_stmt(self, loop: While):
         try:
@@ -186,6 +200,20 @@ class Interpreter(Visitor):
             raise LoxRunTimeError(expr.paren,f"Expected {callee.arity()} arguments but got {len(arguments)}.")
         return callee.call(self, arguments)
 
+    def visit_get_expr(self, expr: Get) -> str:
+        obj = self.evaluate(expr.obj)
+        if type(obj) is LoxInstance:
+            return obj.get(expr.name)
+        raise LoxRunTimeError(expr.name,"Only instances have properties.")
+
+    def visit_set_expr(self, expr: Set) -> str:
+        obj = self.evaluate(expr.obj)
+        if type(obj) is not LoxInstance:
+            raise LoxRunTimeError(expr.name,"Only instances have properties.")
+        value = self.evaluate(expr.value)
+        obj.set(expr.name, value)
+        return value
+
     def execute_block(self, statements: list[Stmt], environment: Environment):
         previous_envi = self.environment
         try:
@@ -194,7 +222,6 @@ class Interpreter(Visitor):
                 self.execute(statement)
         finally:
             self.environment = previous_envi
-
     
     def evaluate(self, expr: Expr) -> str:
         return expr.accept(self)

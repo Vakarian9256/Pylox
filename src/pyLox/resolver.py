@@ -1,11 +1,13 @@
 from visitor import Visitor
-from stmt import Stmt, Expression, Print, Var, Block, If, While, Fun, Return, Break
-from expr import Expr, Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call
+from stmt import *
+from expr import *
 from error_handler import ErrorHandler
 from token import Token
 from interpreter import Interpreter
-from function_types import FunctionType
+from token_type import TokenType
+from function_type import FunctionType
 from var_state import VarState
+from class_type import ClassType
 
 class Resolver(Visitor):
     def __init__(self, interpreter: Interpreter, error_handler: ErrorHandler):
@@ -13,6 +15,7 @@ class Resolver(Visitor):
         self.scopes = []
         self.error_handler = error_handler
         self.current_function = FunctionType.NONE
+        self.current_class = ClassType.NONE
     
     def visit_block_stmt(self, stmt: Block):
         self.begin_scope()
@@ -29,7 +32,23 @@ class Resolver(Visitor):
     def visit_fun_stmt(self, stmt: Fun):
         self.declare(stmt.name)
         self.define(stmt.name)
+        self.scopes[-1][stmt.name.lexeme].state = VarState.READ
         self.resolve(stmt.function)
+
+    def visit_class_stmt(self, stmt: Class):
+        enclosing_class = self.current_class
+        self.current_class = ClassType.CLASS
+        self.declare(stmt.name)
+        self.define(stmt.name)
+        self.begin_scope()
+        self.scopes[-1]["this"] = Variable(Token(TokenType.THIS, 'this', None, stmt.name.line),VarState.READ)
+        for method in stmt.methods:
+            method.type_ = FunctionType.METHOD
+            if method.name.lexeme == 'init':
+                method.type_ = FunctionType.INITIALIZER
+            self.resolve(method)
+        self.end_scope()
+        self.current_class = enclosing_class
 
     def visit_expression_stmt(self, stmt: Expression):
         self.resolve(stmt.expr)
@@ -45,7 +64,9 @@ class Resolver(Visitor):
 
     def visit_return_stmt(self, stmt: Return):
         if self.current_function == FunctionType.NONE:
-            self.error_handler.error(stmt.keyword,"Can't return from top-level code.")
+            self.error_handler.error_on_token(stmt.keyword,"Can't return from top-level code.")
+        elif self.current_function == FunctionType.INITIALIZER:
+            self.error_handler.error_on_token(stmt.keyword,"Can't return a value from an initializer.") 
         if stmt.value is not None:
             self.resolve(stmt.value)
 
@@ -70,6 +91,18 @@ class Resolver(Visitor):
         self.resolve(expr.callee)
         for arg in expr.args:
             self.resolve(arg)
+
+    def visit_get_expr(self, expr: Get):
+        self.resolve(expr.obj)
+    
+    def visit_set_expr(self, expr: Set):
+        self.resolve(expr.value)
+        self.resolve(expr.obj)
+    
+    def visit_this_expr(self, expr: This):
+        if self.current_class == ClassType.NONE:
+            self.error_handler.error_on_token(expr.keyword, "Can't use 'this' outside of a class.")
+        self.resolve_local(expr, expr.keyword, True)
     
     def visit_binary_expr(self, expr: Binary):
         self.resolve(expr.left)

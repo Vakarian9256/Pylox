@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from stmt import Expression, Print, Var, Block, If, While, Fun, Return, Break
-from expr import Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call
+from stmt import *
+from expr import *
 
 
 class Visitor(ABC):
@@ -45,6 +45,18 @@ class Visitor(ABC):
         pass
 
     @abstractmethod
+    def visit_get_expr(self, expr: Get) -> str:
+        pass
+
+    @abstractmethod
+    def visit_set_expr(self, expr: Set) -> str:
+        pass
+
+    @abstractmethod
+    def visit_this_expr(self, expr: This) -> str:
+        pass
+
+    @abstractmethod
     def visit_expression_stmt(self, stmt: Expression) -> str:
         pass
 
@@ -70,6 +82,10 @@ class Visitor(ABC):
 
     @abstractmethod
     def visit_return_stmt(self, stmt: Return) -> str:
+        pass
+
+    @abstractmethod
+    def visit_class_stmt(self, stmt: Class) -> str:
         pass
 
     @abstractmethod

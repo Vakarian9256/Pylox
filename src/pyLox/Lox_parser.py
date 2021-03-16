@@ -1,10 +1,10 @@
 import sys
 from token_type import TokenType
-from function_types import FunctionType
+from function_type import FunctionType
 from token import Token
 from error_handler import ErrorHandler
-from stmt import Stmt, Expression, Print, Var, Block, If, While, Fun, Return, Break
-from expr import Expr,  Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call
+from stmt import *
+from expr import *
 from var_state import VarState
 
 class Parser:
@@ -27,6 +27,8 @@ class Parser:
 
     def declaration(self) -> Stmt:
         try:
+            if self.match(TokenType.CLASS):
+                return self.class_declaration()
             if self.match(TokenType.VAR):
                 return self.var_declaration()
             if self.check(TokenType.FUN) and self.check_next(TokenType.IDENTIFIER):
@@ -64,6 +66,14 @@ class Parser:
         body = self.block_statement()
         return Function(params, body, FunctionType.FUNCTION)
         
+    def class_declaration(self):
+        name = self.consume(TokenType.IDENTIFIER,"Expect class name.")
+        self.consume(TokenType.LEFT_BRACE,"Expect '{' before class body.")
+        methods = []
+        while (not self.check(TokenType.RIGHT_BRACE)) and (not self.is_at_end()):
+            methods.append(self.function("method"))
+        self.consume(TokenType.RIGHT_BRACE,"Expect '}' before class body.")
+        return Class(name, methods) 
 
     def statement(self) -> Stmt:
         if self.match(TokenType.IF):
@@ -185,6 +195,8 @@ class Parser:
             if type(expr) is Variable:
                 name = expr.name
                 return Assign(name, value)
+            elif type(expr) is Get:
+                return Set(expr.obj, expr.name, value)
             self.error(equals, "Invalid assignment target.")
         return expr
 
@@ -258,6 +270,9 @@ class Parser:
         while True:
             if self.match(TokenType.LEFT_PAREN):
                 expr = self.finish_call(expr)
+            elif self.match(TokenType.DOT):
+                name = self.consume(TokenType.IDENTIFIER,"Expect name after '.'.")
+                expr = Get(expr, name)
             else:
                 break   
         return expr
@@ -277,6 +292,8 @@ class Parser:
             expr = self.expression()
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
             return Grouping(expr)
+        if self.match(TokenType.THIS):
+            return This(self.previous())
         if self.match(TokenType.IDENTIFIER):
             return Variable(self.previous())
         # The following if clauses are productions for missing left operands - "error productions"

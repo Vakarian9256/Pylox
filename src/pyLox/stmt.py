@@ -59,6 +59,15 @@ class Return(Stmt):
     def accept(self, visitor) -> str:
         return visitor.visit_return_stmt(self)
 
+class Class(Stmt):
+    def __init__(self, name: Token, methods: list[Stmt]):
+        self.name = name
+        self.methods = methods
+    
+    def accept(self, visitor) -> str:
+        return visitor.visit_class_stmt(self)
+
+
 class While(Stmt):
     def __init__(self, condition: Expr, body: Stmt):
         self.condition = condition
