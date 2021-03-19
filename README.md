@@ -1,5 +1,5 @@
 # Pylox Interpreter
-An implementation of a tree walker interpreter for the Lox language from the book Crafting Interpreters by Bob Nystrom in Python.
+An implementation of a tree walker interpreter for the Lox language from the book [Crafting Interpreters by Bob Nystrom](https://craftinginterpreters.com/index.html) in Python.
 The interpreter can be used in two different modes:
 1. REPL - statements & expressions are passed through the terminal. statements are executed while expressions are evaluated and displayed.
 2. Passing a file as an command line argument.
