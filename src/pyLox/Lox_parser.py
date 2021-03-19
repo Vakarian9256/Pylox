@@ -31,7 +31,7 @@ class Parser:
                 return self.class_declaration()
             if self.check(TokenType.FUN) and self.check_next(TokenType.IDENTIFIER):
                 self.consume(TokenType.FUN, None)
-                return self.function("function")
+                return self.function(FunctionType.FUNCTION)
             if self.match(TokenType.VAR):
                 return self.var_declaration()
             return self.statement()
@@ -47,24 +47,28 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expect semicolon after variable declaration.")
         return Var(name, initializer)
 
-    def function(self, kind: str) -> Stmt:
-        name = self.consume(TokenType.IDENTIFIER,f"Expect {kind} name.")
+    def function(self, kind: FunctionType) -> Stmt:
+        name = self.consume(TokenType.IDENTIFIER,f"Expect {str(kind).lower()} name.")
+        if kind == FunctionType.METHOD:
+            if not self.check(TokenType.LEFT_PAREN):
+                kind = FunctionType.GETMETHOD
         return Fun(name, self.function_body(kind))
 
-    def function_body(self, kind: str) -> Function:
-        self.consume(TokenType.LEFT_PAREN,f"Expect '(' after {kind} name.")
+    def function_body(self, kind: FunctionType) -> Function:
         params = []
-        if not self.check(TokenType.RIGHT_PAREN):
-            while True:
-                if len(params) >= 255:
-                    self.error(self.peek(),"Can't have more than 255 parameters.")
-                params.append(self.consume(TokenType.IDENTIFIER,"Expect parameter name."))
-                if not self.match(TokenType.COMMA):
-                    break
-        self.consume(TokenType.RIGHT_PAREN,"Expect ')' after parameters.")
-        self.consume(TokenType.LEFT_BRACE,"Expect '{ before " + kind + " body.")
+        if kind != FunctionType.GETMETHOD:
+            self.consume(TokenType.LEFT_PAREN,f"Expect '(' after {str(kind).lower()} name.")
+            if not self.check(TokenType.RIGHT_PAREN):
+                while True:
+                    if len(params) >= 255:
+                        self.error(self.peek(),"Can't have more than 255 parameters.")
+                    params.append(self.consume(TokenType.IDENTIFIER,"Expect parameter name."))
+                    if not self.match(TokenType.COMMA):
+                        break
+            self.consume(TokenType.RIGHT_PAREN,"Expect ')' after parameters.")
+        self.consume(TokenType.LEFT_BRACE,"Expect '{ before " + str(kind).lower() + " body.")
         body = self.block_statement()
-        return Function(params, body, FunctionType.FUNCTION)
+        return Function(params, body, kind)
         
     def class_declaration(self):
         name = self.consume(TokenType.IDENTIFIER,"Expect class name.")
@@ -73,7 +77,7 @@ class Parser:
         class_methods = []
         while (not self.check(TokenType.RIGHT_BRACE)) and (not self.is_at_end()):
             is_static = self.match(TokenType.CLASS)
-            (class_methods if is_static else methods).append(self.function("method"))
+            (class_methods if is_static else methods).append(self.function(FunctionType.METHOD))
         self.consume(TokenType.RIGHT_BRACE,"Expect '}' before class body.")
         return Class(name, methods, class_methods) 
 
@@ -289,7 +293,7 @@ class Parser:
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.previous().literal)
         if self.match(TokenType.FUN):
-            return self.function_body("function")
+            return self.function_body(FunctionType.FUNCTION)
         if self.match(TokenType.LEFT_PAREN):
             expr = self.expression()
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")

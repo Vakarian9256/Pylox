@@ -216,8 +216,12 @@ class Interpreter(Visitor):
     def visit_get_expr(self, expr: Get) -> str:
         obj = self.evaluate(expr.obj)
         if isinstance(obj, LoxInstance):
-            return obj.get(expr.name)
-        raise LoxRunTimeError(expr.name,"Only instances have properties.")
+            result = obj.get(expr.name)
+            if isinstance(result, LoxFunction) and result.is_getter():
+                result = result.call(self, [])
+        else:
+            raise LoxRunTimeError(expr.name,"Only instances have properties.")
+        return result
 
     def visit_set_expr(self, expr: Set) -> str:
         obj = self.evaluate(expr.obj)

@@ -4,6 +4,7 @@ from stmt import Expression, Print, Var, Block, If, While, Fun, Return, Break
 from expr import Function
 from environment import Environment
 from error import ReturnException
+from function_type import FunctionType
 
 class LoxFunction(LoxCallable):
     def __init__(self, name: str, declaration: Function, closure: Environment, is_ini=False):
@@ -37,6 +38,8 @@ class LoxFunction(LoxCallable):
         else:
             return LoxFunction(self.name, self.declaration, environment, self.is_ini)
 
+    def is_getter(self):
+        return self.declaration.type_ == FunctionType.GETMETHOD
 
     def __str__():
         if self.name is None:
