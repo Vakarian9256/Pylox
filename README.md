@@ -35,3 +35,4 @@ Resolving And Binding:
 
 Classes:
 * Added [metaclasses](https://en.wikipedia.org/wiki/Metaclass), and through them added support for [class methods](https://en.wikipedia.org/wiki/Method_(computer_programming)#Class_methods)
+* Added support for [get methods](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get) - more info [here](https://craftinginterpreters.com/classes.html#challenges).
