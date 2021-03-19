@@ -34,4 +34,4 @@ Resolving And Binding:
 * Changed implementation of an environment to a list instead of a dictionary.
 
 Classes:
-* Added metaclasses & static methods
+* Added [metaclasses](https://en.wikipedia.org/wiki/Metaclass), and through them added support for [class methods](https://en.wikipedia.org/wiki/Method_(computer_programming)#Class_methods)
