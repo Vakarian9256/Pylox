@@ -5,7 +5,7 @@ The interpreter can be used in two different modes:
 2. Passing a file as an command line argument.
 
 # Progress
-Finished chapters 1-11. 
+The interpreter is now complete. 
 
 Challenges completed:
 
