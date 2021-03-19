@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import Any
 from Lox_callable import LoxCallable
 from Lox_instance import LoxInstance
@@ -26,7 +27,6 @@ class LoxClass(LoxCallable):
         if name in self.methods.keys():
             return self.methods.get(name)
         return None
-
 
     def __str__(self):
         return self.name

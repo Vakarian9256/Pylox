@@ -65,7 +65,7 @@ class Unary(Expr):
         return visitor.visit_unary_expr(self)
 
 class Variable(Expr):
-    def __init__(self, name: Token, state=None):
+    def __init__(self, name: Token, state=VarState.READ):
         self.name = name
         self.state = state
 

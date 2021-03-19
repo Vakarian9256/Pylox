@@ -15,15 +15,15 @@ class LoxFunction(LoxCallable):
     def call(self,interpreter, arguments: list[Any]):
         environment = Environment(self.closure)
         for i in range(len(arguments)):
-            environment.define(self.declaration.params[i].lexeme, arguments[i])
+            environment.define(arguments[i])
         try:
             interpreter.execute_block(self.declaration.body, environment)
         except ReturnException as ret:
-            if self.is_ini:
-                return self.closure.get_at(0, 'this')
+            if type(self.is_ini) is int:
+                return self.closure.get_at(0, self.is_ini)
             return ret.value
-        if self.is_ini:
-            return self.closure.get_at(0,'this')
+        if type(self.is_ini) is int:
+            return self.closure.get_at(0, self.is_ini)
         return None
 
     def arity(self):
@@ -31,8 +31,12 @@ class LoxFunction(LoxCallable):
     
     def bind(self, instance):
         environment = Environment(self.closure)
-        environment.define("this", instance)
-        return LoxFunction(self.name, self.declaration, environment, self.is_ini)
+        environment.define(instance)
+        if type(self.is_ini) is bool and self.is_ini:
+            return LoxFunction(self.name, self.declaration, environment, len(environment.vars)-1)
+        else:
+            return LoxFunction(self.name, self.declaration, environment, self.is_ini)
+
 
     def __str__():
         if self.name is None:

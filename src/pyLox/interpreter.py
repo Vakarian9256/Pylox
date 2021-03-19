@@ -35,10 +35,11 @@ class Interpreter(Visitor):
 
     def __init__(self, error_handler: ErrorHandler):
         self.error_handler = error_handler
-        self.globals = Environment()
-        self.environment = self.globals
-        self.globals.define('clock', Clock())
+        self.globals = {}
+        self.environment = None
+        self.globals['clock'] =  Clock()
         self.locals = {}
+        self.slots = {}
 
     def interpret(self, statements: list[Stmt], mode: RunMode):
         try:
@@ -57,14 +58,15 @@ class Interpreter(Visitor):
     def execute(self, statement: Stmt):
         statement.accept(self)
     
-    def resolve(self, expr: Expr, depth: int):
+    def resolve(self, expr: Expr, depth: int, slot: int):
         self.locals[expr] = depth
+        self.slots[expr] = slot
     
     def visit_var_stmt(self, stmt: Var):
         value = Interpreter.uninitialized
         if stmt.initializer is not None:
             value = self.evaluate(stmt.initializer)
-        self.environment.define(stmt.name.lexeme, value)
+        self.define(stmt.name.lexeme, value)
 
     def visit_expression_stmt(self, stmt: Expression):
         expr = self.evaluate(stmt.expr)
@@ -89,13 +91,16 @@ class Interpreter(Visitor):
         raise ReturnException(value)
 
     def visit_class_stmt(self, stmt: Class):
-        self.environment.define(stmt.name.lexeme, None)
+        self.define(stmt.name.lexeme, None)
         methods = {}
         for method in stmt.methods:
             function = LoxFunction(method, method.function, self.environment, method.name.lexeme == 'init')
             methods[method.name.lexeme] = function
         klass = LoxClass(stmt.name.lexeme, methods)
-        self.environment.assign(stmt.name, klass)
+        if self.environment:
+            self.environment.assign_at(self.slots[klass], klass)
+        else:
+            self.globals[stmt.name.lexeme] = klass
 
     def visit_this_expr(self, expr: This):
         return self.look_up_variable(expr.keyword, expr)
@@ -112,7 +117,7 @@ class Interpreter(Visitor):
     
     def visit_fun_stmt(self, stmt: Fun):
         f_name = stmt.name.lexeme
-        self.environment.define(f_name, LoxFunction(f_name, stmt.function, self.environment))
+        self.define(f_name, LoxFunction(f_name, stmt.function, self.environment))
         return None
 
     def visit_variable_expr(self, expr: Variable) -> Any:
@@ -121,9 +126,12 @@ class Interpreter(Visitor):
     def visit_assign_expr(self, expr: Assign) -> Any:
         value = self.evaluate(expr.value)
         if expr in self.locals:
-            self.environment.assign_at(self.locals[expr], expr.name, value)
+            self.environment.assign_at(self.locals[expr], self.slots[expr], value)
         else:
-            self.globals.assign(expr.name, value)
+            if expr.name.lexeme in self.globals:
+                self.globals[expr.name.lexeme] = value
+            else:
+                raise LoxRunTimeError(expr.name, f"Undefined variable {expr.name.lexeme}.")
         return value
 
     def visit_literal_expr(self, expr: Literal) -> str:
@@ -246,9 +254,11 @@ class Interpreter(Visitor):
 
     def look_up_variable(self, name: Token, expr: Expr) -> Any:
         if expr in self.locals:
-            value = self.environment.get_at(self.locals[expr], name.lexeme)
+            value = self.environment.get_at(self.locals[expr], self.slots[expr])
+        elif name.lexeme in self.globals:
+            value = self.globals[name.lexeme]
         else:
-            value = self.globals.get(name)
+            raise LoxRunTimeError(name, f"Undefined variable {name.lexeme}.")
         if value == Interpreter.uninitialized:
             raise LoxRunTimeError(name, "Variable must be initialized before use.")
         return value
@@ -274,6 +284,8 @@ class Interpreter(Visitor):
             return False
         return True
 
-            
-
-    
+    def define(self, name: str, value: Any):
+        if self.environment:
+            self.environment.define(value)
+        else:
+            self.globals[name] = value    

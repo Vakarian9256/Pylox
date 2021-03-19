@@ -8,6 +8,7 @@ from token_type import TokenType
 from function_type import FunctionType
 from var_state import VarState
 from class_type import ClassType
+from collections import namedtuple
 
 class Resolver(Visitor):
     def __init__(self, interpreter: Interpreter, error_handler: ErrorHandler):
@@ -31,17 +32,18 @@ class Resolver(Visitor):
         
     def visit_fun_stmt(self, stmt: Fun):
         self.declare(stmt.name)
-        self.define(stmt.name)
-        self.scopes[-1][stmt.name.lexeme].state = VarState.READ
+        self.define(stmt.name, True)
         self.resolve(stmt.function)
 
     def visit_class_stmt(self, stmt: Class):
         enclosing_class = self.current_class
         self.current_class = ClassType.CLASS
         self.declare(stmt.name)
-        self.define(stmt.name)
+        self.define(stmt.name, True)
         self.begin_scope()
-        self.scopes[-1]["this"] = Variable(Token(TokenType.THIS, 'this', None, stmt.name.line),VarState.READ)
+        this_token = Token(TokenType.THIS, 'this', None, stmt.name.line)
+        self.declare(this_token)
+        self.define(this_token, True)
         for method in stmt.methods:
             method.type_ = FunctionType.METHOD
             if method.name.lexeme == 'init':
@@ -76,7 +78,7 @@ class Resolver(Visitor):
     
     def visit_variable_expr(self, expr: Variable):
         if self.scopes and expr.name.lexeme in self.scopes[-1]:
-            if self.scopes[-1][expr.name.lexeme].state == VarState.DECLARED:
+            if self.scopes[-1][expr.name.lexeme][0].state == VarState.DECLARED:
                 self.error_handler.error_on_token(expr.name, "Cant read local variable in its own initializer.")
         self.resolve_local(expr, expr.name, True)
 
@@ -147,9 +149,9 @@ class Resolver(Visitor):
     def resolve_local(self, expr: Expr, name: Token, is_read: bool):
         for i in range(len(self.scopes)-1,-1,-1):
             if name.lexeme in self.scopes[i]:
-                self.interpreter.resolve(expr, len(self.scopes) - i - 1)
+                self.interpreter.resolve(expr, len(self.scopes) - i - 1, self.scopes[i][name.lexeme][1])
                 if is_read:
-                    self.scopes[i][name.lexeme].state = VarState.READ
+                    self.scopes[i][name.lexeme][0].state = VarState.READ
                 return
 
     def begin_scope(self):
@@ -158,8 +160,8 @@ class Resolver(Visitor):
     def end_scope(self):
         ending = self.scopes.pop()
         for entry in ending:
-            if ending[entry].state != VarState.READ:
-                self.error_handler.error_on_token(ending[entry].name, "Local variable not used.")
+            if ending[entry][0].state != VarState.READ:
+                self.error_handler.error_on_token(ending[entry][0].name, "Local variable not used.")
 
 
     def declare(self, name: Token):
@@ -168,9 +170,13 @@ class Resolver(Visitor):
         peek = self.scopes[-1]
         if name.lexeme in peek:
             self.error_handler.error_on_token(name,"Variable with this name has already been declared in this scope.")
-        peek[name.lexeme] = Variable(name, VarState.DECLARED)
+        peek[name.lexeme] = (Variable(name, VarState.DECLARED),len(peek))
     
-    def define(self, name: Token):
+    def define(self, name: Token, ignore_state=False):
         if not self.scopes:
             return None
-        self.scopes[-1][name.lexeme] = Variable(name, VarState.DEFINED)
+        if not ignore_state:
+            self.scopes[-1][name.lexeme][0].state = VarState.DEFINED
+        else:
+            self.scopes[-1][name.lexeme][0].state = VarState.READ
+

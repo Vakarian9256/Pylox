@@ -29,11 +29,11 @@ class Parser:
         try:
             if self.match(TokenType.CLASS):
                 return self.class_declaration()
-            if self.match(TokenType.VAR):
-                return self.var_declaration()
             if self.check(TokenType.FUN) and self.check_next(TokenType.IDENTIFIER):
                 self.consume(TokenType.FUN, None)
                 return self.function("function")
+            if self.match(TokenType.VAR):
+                return self.var_declaration()
             return self.statement()
         except Parser.ParseError as error:
             self.synchronize()

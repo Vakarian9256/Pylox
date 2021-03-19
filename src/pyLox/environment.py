@@ -7,33 +7,17 @@ from var_state import VarState
 class Environment:
     def __init__(self, enclosing=None):
         self.enclosing = enclosing
-        self.var_map = {}
+        self.vars = []
 
-    def define(self, name: str, value: Any):
-        self.var_map[name] = value
+    def define(self, value: Any):
+        self.vars.append(value)
 
-    def assign(self, name: Token, value: Any):
-        if name.lexeme in self.var_map:
-            self.define(name.lexeme, value)
-        elif self.enclosing is not None:
-            self.enclosing.assign(name, value)
-            return
-        else:
-            raise LoxRunTimeError(name, f"Undefined variable {name.lexeme}.")
+    def assign_at(self, distance: int, slot: int, value: Any):
+        self.ancestor(distance).vars[slot] = value
 
-    def assign_at(self, distance: int, name: Token, value: Any):
-        self.ancestor(distance).var_map[name.lexeme] = value
-
-    def get(self, name: Token) -> Any:
-        if name.lexeme in self.var_map:
-            return self.var_map[name.lexeme]
-        if self.enclosing is not None:
-            self.enclosing.get(name)
-            return
-        raise LoxRunTimeError(name, f"Undefined variable {name.lexeme}.")
-
-    def get_at(self, distance: int, name: str) -> Any:
-        return self.ancestor(distance).var_map[name]
+    def get_at(self, distance: int, slot) -> Any:
+        if type(slot) is int:
+            return self.ancestor(distance).vars[slot]
 
     def ancestor(self, distance: int):
         env = self
