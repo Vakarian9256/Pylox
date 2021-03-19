@@ -70,10 +70,12 @@ class Parser:
         name = self.consume(TokenType.IDENTIFIER,"Expect class name.")
         self.consume(TokenType.LEFT_BRACE,"Expect '{' before class body.")
         methods = []
+        class_methods = []
         while (not self.check(TokenType.RIGHT_BRACE)) and (not self.is_at_end()):
-            methods.append(self.function("method"))
+            is_static = self.match(TokenType.CLASS)
+            (class_methods if is_static else methods).append(self.function("method"))
         self.consume(TokenType.RIGHT_BRACE,"Expect '}' before class body.")
-        return Class(name, methods) 
+        return Class(name, methods, class_methods) 
 
     def statement(self) -> Stmt:
         if self.match(TokenType.IF):

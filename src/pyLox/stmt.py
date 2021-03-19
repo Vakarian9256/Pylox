@@ -60,9 +60,10 @@ class Return(Stmt):
         return visitor.visit_return_stmt(self)
 
 class Class(Stmt):
-    def __init__(self, name: Token, methods: list[Stmt]):
+    def __init__(self, name: Token, methods: list[Stmt], class_methods: list[Stmt]):
         self.name = name
         self.methods = methods
+        self.class_methods = class_methods
     
     def accept(self, visitor) -> str:
         return visitor.visit_class_stmt(self)

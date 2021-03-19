@@ -5,8 +5,9 @@ from Lox_instance import LoxInstance
 from token import Token
 from error import LoxRunTimeError
 
-class LoxClass(LoxCallable):
-    def __init__(self, name: str, methods):
+class LoxClass(LoxCallable, LoxInstance):
+    def __init__(self, metaclass, name: str, methods):
+        super().__init__(metaclass)
         self.name = name
         self.methods = methods
         

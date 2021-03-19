@@ -92,11 +92,16 @@ class Interpreter(Visitor):
 
     def visit_class_stmt(self, stmt: Class):
         self.define(stmt.name.lexeme, None)
+        class_methods = {}
+        for class_method in stmt.class_methods:
+            function = LoxFunction(class_method, class_method.function, self.environment, False)
+            class_methods[class_method.name.lexeme] = function
+        metaclass = LoxClass(None, f'{stmt.name.lexeme}metaclass', class_methods)
         methods = {}
         for method in stmt.methods:
             function = LoxFunction(method, method.function, self.environment, method.name.lexeme == 'init')
             methods[method.name.lexeme] = function
-        klass = LoxClass(stmt.name.lexeme, methods)
+        klass = LoxClass(metaclass, stmt.name.lexeme, methods)
         if self.environment:
             self.environment.assign_at(self.slots[klass], klass)
         else:
@@ -210,13 +215,13 @@ class Interpreter(Visitor):
 
     def visit_get_expr(self, expr: Get) -> str:
         obj = self.evaluate(expr.obj)
-        if type(obj) is LoxInstance:
+        if isinstance(obj, LoxInstance):
             return obj.get(expr.name)
         raise LoxRunTimeError(expr.name,"Only instances have properties.")
 
     def visit_set_expr(self, expr: Set) -> str:
         obj = self.evaluate(expr.obj)
-        if type(obj) is not LoxInstance:
+        if not isinstance(obj, LoxInstance):
             raise LoxRunTimeError(expr.name,"Only instances have properties.")
         value = self.evaluate(expr.value)
         obj.set(expr.name, value)

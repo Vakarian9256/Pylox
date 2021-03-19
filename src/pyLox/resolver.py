@@ -50,6 +50,13 @@ class Resolver(Visitor):
                 method.type_ = FunctionType.INITIALIZER
             self.resolve(method)
         self.end_scope()
+        for class_method in stmt.class_methods:
+            self.begin_scope()
+            this_token = Token(TokenType.THIS, 'this', None, stmt.name.line)
+            self.declare(this_token)
+            self.define(this_token, True)
+            self.resolve(class_method)
+            self.end_scope()
         self.current_class = enclosing_class
 
     def visit_expression_stmt(self, stmt: Expression):
