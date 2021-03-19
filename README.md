@@ -20,3 +20,4 @@ Challenges completed:
 * Lambda functions are now supported.
 * An unused & defined variable now raises a runtime error.
 * Changed implementation of an environment to a list instead of a dictionary.
+* Added metaclasses
