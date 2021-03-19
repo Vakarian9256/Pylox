@@ -1,6 +1,6 @@
 from visitor import Visitor
-from stmt import *
-from expr import *
+from stmt import Stmt, Expression, Print, Var, Block, If, While, Break, Fun, Return, Class
+from expr import Expr, Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call, Get, Set, This, Super
 from error_handler import ErrorHandler
 from token import Token
 from interpreter import Interpreter
@@ -40,7 +40,16 @@ class Resolver(Visitor):
         self.current_class = ClassType.CLASS
         self.declare(stmt.name)
         self.define(stmt.name, True)
+        if stmt.super_class is not None:
+            self.current_class = ClassType.SUBCLASS
+            if stmt.super_class.name.lexeme == stmt.name.lexeme:
+                self.error_handler.error_on_token(stmt.super_class.name,"A class can't inherit from itself.")
+            self.resolve(stmt.super_class)
+            self.resolve_local(stmt.super_class, stmt.super_class.name, True)
+            self.begin_scope()
+            self.scopes[-1]['super'] = (Variable(stmt.super_class.name, VarState.READ), len(self.scopes[-1]))
         self.begin_scope()
+        self.resolve_local(stmt, stmt.name, True)
         this_token = Token(TokenType.THIS, 'this', None, stmt.name.line)
         self.declare(this_token)
         self.define(this_token, True)
@@ -52,10 +61,12 @@ class Resolver(Visitor):
         self.end_scope()
         for class_method in stmt.class_methods:
             self.begin_scope()
-            this_token = Token(TokenType.THIS, 'this', None, stmt.name.line)
+            this_token = Token(TokenType.THIS, 'this', None, class_method.name.line)
             self.declare(this_token)
             self.define(this_token, True)
             self.resolve(class_method)
+            self.end_scope()
+        if stmt.super_class is not None:
             self.end_scope()
         self.current_class = enclosing_class
 
@@ -112,6 +123,14 @@ class Resolver(Visitor):
         if self.current_class == ClassType.NONE:
             self.error_handler.error_on_token(expr.keyword, "Can't use 'this' outside of a class.")
         self.resolve_local(expr, expr.keyword, True)
+    
+    def visit_super_expr(self, expr: Super):
+        if self.current_class == ClassType.NONE:
+            self.error_handler.error_on_token(expr.keyword, "Can't use 'super' outside of a class.")
+        elif self.current_class != ClassType.SUBCLASS:
+             self.error_handler.error_on_token(expr.keyword, "Can't use 'super' in a class with no superclass.")           
+        self.resolve_local(expr, expr.keyword, True)
+
     
     def visit_binary_expr(self, expr: Binary):
         self.resolve(expr.left)

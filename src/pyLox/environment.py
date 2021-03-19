@@ -16,8 +16,7 @@ class Environment:
         self.ancestor(distance).vars[slot] = value
 
     def get_at(self, distance: int, slot) -> Any:
-        if type(slot) is int:
-            return self.ancestor(distance).vars[slot]
+        return self.ancestor(distance).vars[slot]
 
     def ancestor(self, distance: int):
         env = self

@@ -12,7 +12,7 @@ class Assign(Expr):
         self.name = name
         self.value = value
 
-    def accept(self, visitor) -> str:
+    def accept(self, visitor):
         return visitor.visit_assign_expr(self)
 
 class Binary(Expr):
@@ -21,7 +21,7 @@ class Binary(Expr):
         self.operator = operator
         self.right = right
 
-    def accept(self, visitor) -> str:
+    def accept(self, visitor):
         return visitor.visit_binary_expr(self)
 
 class Conditional(Expr):
@@ -30,21 +30,21 @@ class Conditional(Expr):
         self.then_branch = then_branch
         self.else_branch = else_branch
 
-    def accept(self, visitor) -> str:
+    def accept(self, visitor):
         return visitor.visit_conditional_expr(self)
 
 class Grouping(Expr):
     def __init__(self, expression: Expr):
         self.expression = expression
 
-    def accept(self, visitor) -> str:
+    def accept(self, visitor):
         return visitor.visit_grouping_expr(self)
 
 class Literal(Expr):
     def __init__(self, value: Any):
         self.value = value
 
-    def accept(self, visitor) -> str:
+    def accept(self, visitor):
         return visitor.visit_literal_expr(self)
 
 class Logical(Expr):
@@ -53,7 +53,7 @@ class Logical(Expr):
         self.operator = operator
         self.right = right
 
-    def accept(self, visitor) -> str:
+    def accept(self, visitor):
         return visitor.visit_logical_expr(self)
 
 class Unary(Expr):
@@ -61,7 +61,7 @@ class Unary(Expr):
         self.operator = operator
         self.right = right
 
-    def accept(self, visitor) -> str:
+    def accept(self, visitor):
         return visitor.visit_unary_expr(self)
 
 class Variable(Expr):
@@ -69,7 +69,7 @@ class Variable(Expr):
         self.name = name
         self.state = state
 
-    def accept(self, visitor) -> str:
+    def accept(self, visitor):
         return visitor.visit_variable_expr(self)
 
 class Function(Expr):
@@ -78,7 +78,7 @@ class Function(Expr):
         self.body = body
         self.type_ = type_
 
-    def accept(self, visitor) -> str:
+    def accept(self, visitor):
         return visitor.visit_function_expr(self)
 
 class Call(Expr):
@@ -87,7 +87,7 @@ class Call(Expr):
         self.paren = paren
         self.args = args
 
-    def accept(self, visitor) -> str:
+    def accept(self, visitor):
         return visitor.visit_call_expr(self)
 
 class Get(Expr):
@@ -95,7 +95,7 @@ class Get(Expr):
         self.obj = obj
         self.name = name
     
-    def accept(self, visitor) -> str:
+    def accept(self, visitor):
         return visitor.visit_get_expr(self)
 
 class Set(Expr):
@@ -104,12 +104,20 @@ class Set(Expr):
         self.name = name
         self.value = value
     
-    def accept(self, visitor) -> str:
+    def accept(self, visitor):
         return visitor.visit_set_expr(self)
 
 class This(Expr):
     def __init__(self, keyword: Token):
         self.keyword = keyword
     
-    def accept(self, visitor) -> str:
+    def accept(self, visitor):
         return visitor.visit_this_expr(self)
+
+class Super(Expr):
+    def __init__(self, keyword: Token, method: Token):
+        self.keyword = keyword
+        self.method = method
+
+    def accept(self, visitor):
+        return visitor.visit_super_expr(self)

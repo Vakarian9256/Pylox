@@ -6,8 +6,9 @@ from token import Token
 from error import LoxRunTimeError
 
 class LoxClass(LoxCallable, LoxInstance):
-    def __init__(self, metaclass, name: str, methods):
+    def __init__(self, metaclass, super_class, name: str, methods):
         super().__init__(metaclass)
+        self.super_class = super_class
         self.name = name
         self.methods = methods
         
@@ -27,6 +28,8 @@ class LoxClass(LoxCallable, LoxInstance):
     def find_method(self, name: str):
         if name in self.methods.keys():
             return self.methods.get(name)
+        if self.super_class is not None:
+            return self.super_class.find_method(name)
         return None
 
     def __str__(self):

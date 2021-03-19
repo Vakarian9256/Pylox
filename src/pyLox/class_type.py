@@ -1,3 +1,3 @@
 from enum import Enum
 
-ClassType = Enum("ClassType", "NONE CLASS")
+ClassType = Enum("ClassType", "NONE CLASS SUBCLASS")

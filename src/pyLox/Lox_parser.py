@@ -3,8 +3,8 @@ from token_type import TokenType
 from function_type import FunctionType
 from token import Token
 from error_handler import ErrorHandler
-from stmt import *
-from expr import *
+from stmt import Stmt, Expression, Print, Var, Block, If, While, Break, Fun, Return, Class
+from expr import Expr, Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call, Get, Set, This, Super
 from var_state import VarState
 
 class Parser:
@@ -72,6 +72,10 @@ class Parser:
         
     def class_declaration(self):
         name = self.consume(TokenType.IDENTIFIER,"Expect class name.")
+        super_class = None
+        if self.match(TokenType.LESS):
+            self.consume(TokenType.IDENTIFIER,"Expect super class name after '<'.")
+            super_class = Variable(self.previous(), None)
         self.consume(TokenType.LEFT_BRACE,"Expect '{' before class body.")
         methods = []
         class_methods = []
@@ -79,7 +83,7 @@ class Parser:
             is_static = self.match(TokenType.CLASS)
             (class_methods if is_static else methods).append(self.function(FunctionType.METHOD))
         self.consume(TokenType.RIGHT_BRACE,"Expect '}' before class body.")
-        return Class(name, methods, class_methods) 
+        return Class(name, super_class, methods, class_methods) 
 
     def statement(self) -> Stmt:
         if self.match(TokenType.IF):
@@ -300,6 +304,11 @@ class Parser:
             return Grouping(expr)
         if self.match(TokenType.THIS):
             return This(self.previous())
+        if self.match(TokenType.SUPER):
+            keyword = self.previous()
+            self.consume(TokenType.DOT,"Expect '.' after super.")
+            method = self.consume(TokenType.IDENTIFIER,"Expect superclass method name.")
+            return Super(keyword, method)
         if self.match(TokenType.IDENTIFIER):
             return Variable(self.previous())
         # The following if clauses are productions for missing left operands - "error productions"

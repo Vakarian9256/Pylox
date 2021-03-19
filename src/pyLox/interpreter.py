@@ -4,8 +4,8 @@ import operator
 from typing import Any
 from native import Clock
 from visitor import Visitor
-from stmt import *
-from expr import *
+from stmt import Stmt, Expression, Print, Var, Block, If, While, Break, Fun, Return, Class
+from expr import Expr, Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call, Get, Set, This, Super
 from token_type import TokenType
 from token import Token
 from error import LoxRunTimeError, DivisionByZeroError, ReturnException, BreakException
@@ -58,7 +58,7 @@ class Interpreter(Visitor):
     def execute(self, statement: Stmt):
         statement.accept(self)
     
-    def resolve(self, expr: Expr, depth: int, slot: int):
+    def resolve(self, expr, depth: int, slot: int):
         self.locals[expr] = depth
         self.slots[expr] = slot
     
@@ -92,23 +92,43 @@ class Interpreter(Visitor):
 
     def visit_class_stmt(self, stmt: Class):
         self.define(stmt.name.lexeme, None)
+        super_class = None
+        if stmt.super_class is not None:
+            super_class = self.evaluate(stmt.super_class)
+            if not isinstance(super_class, LoxClass):
+                raise LoxRunTimeError(stmt.super_class.name,"Superclass must be a class.")
+            self.environment = Environment(self.environment)
+            self.environment.define(super_class)
         class_methods = {}
         for class_method in stmt.class_methods:
             function = LoxFunction(class_method, class_method.function, self.environment, False)
             class_methods[class_method.name.lexeme] = function
-        metaclass = LoxClass(None, f'{stmt.name.lexeme}metaclass', class_methods)
+        metaclass = LoxClass(None, f'{stmt.name.lexeme}metaclass', None, class_methods)
         methods = {}
         for method in stmt.methods:
             function = LoxFunction(method, method.function, self.environment, method.name.lexeme == 'init')
             methods[method.name.lexeme] = function
-        klass = LoxClass(metaclass, stmt.name.lexeme, methods)
+        klass = LoxClass(metaclass, super_class, stmt.name.lexeme, methods)
+        if super_class is not None:
+            self.environment = self.environment.enclosing
         if self.environment:
-            self.environment.assign_at(self.slots[klass], klass)
+            self.environment.assign_at(0, self.slots[stmt], klass)
         else:
             self.globals[stmt.name.lexeme] = klass
 
     def visit_this_expr(self, expr: This):
         return self.look_up_variable(expr.keyword, expr)
+    
+    def visit_super_expr(self, expr: Super):
+        super_class = self.environment.get_at(self.locals[expr], self.slots[expr])
+        if self.environment:
+            obj = self.environment.get_at(self.locals[expr] - 1, 0)
+        else:
+            obj = self.globals['this']
+        method = super_class.find_method(expr.method.lexeme)
+        if method is None:
+            raise LoxRunTimeError(expr.method,f"Undefined propery {expr.method.lexeme}.")
+        return method.bind(obj)
 
     def visit_while_stmt(self, loop: While):
         try:
@@ -294,7 +314,7 @@ class Interpreter(Visitor):
         return True
 
     def define(self, name: str, value: Any):
-        if self.environment:
+        if self.environment is not None:
             self.environment.define(value)
         else:
             self.globals[name] = value    
