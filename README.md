@@ -8,16 +8,30 @@ The interpreter can be used in two different modes:
 Finished chapters 1-11. 
 
 Challenges completed:
+
+Parsing Expressions:
 * [Comma operator](https://en.wikipedia.org/wiki/Comma_operator)
 * [Ternary Operator](https://en.wikipedia.org/wiki/%3F:)
 * Error reporting on binary operators missing a left-hand operand.
+
+Evaluating Expressions:
 * Added comparison operators to strings, chose not to allow comparison between mixed types.
 * Added support for concatenating strings and numbers.
 * Error report for division by zero.
+
+Statements And State:
 * REPL now works in the following way: statements are executed, while expressions are evaluted and displayed.
 * Accessing an undefined variable is now a runtime error.
+
+Control Flow:
 * Added support for a break statement.
+
+Functions:
 * Lambda functions are now supported.
+
+Resolving And Binding:
 * An unused & defined variable now raises a runtime error.
 * Changed implementation of an environment to a list instead of a dictionary.
+
+Classes:
 * Added metaclasses & static methods
