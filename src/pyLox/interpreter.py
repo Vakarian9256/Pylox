@@ -288,7 +288,6 @@ class Interpreter(Visitor):
             if type(arg) is not str:
                 all_string = False
             if type(arg) is not float and type(arg) is not int:
-                print(type(arg))
                 all_num = False
         if all_num == False and all_string == False:
             raise LoxRunTimeError(operator, "Operands must all be of the same type.")
