@@ -10,8 +10,8 @@ The interpreter is now complete.
 Challenges completed:
 
 Parsing Expressions:
-* [Comma operator](https://en.wikipedia.org/wiki/Comma_operator)
-* [Ternary Operator](https://en.wikipedia.org/wiki/%3F:)
+* [Comma operator](https://en.wikipedia.org/wiki/Comma_operator).
+* [Ternary Operator](https://en.wikipedia.org/wiki/%3F:).
 * Error reporting on binary operators missing a left-hand operand.
 
 Evaluating Expressions:
@@ -34,7 +34,7 @@ Resolving And Binding:
 * Changed implementation of an environment to a list instead of a dictionary.
 
 Classes:
-* Added [metaclasses](https://en.wikipedia.org/wiki/Metaclass), and through them added support for [class methods](https://en.wikipedia.org/wiki/Method_(computer_programming)#Class_methods)
+* Added [metaclasses](https://en.wikipedia.org/wiki/Metaclass), and through them added support for [class methods](https://en.wikipedia.org/wiki/Method_(computer_programming)#Class_methods).
 * Added support for [get methods](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get) - more info [here](https://craftinginterpreters.com/classes.html#challenges).
 
 # Personal Additions
