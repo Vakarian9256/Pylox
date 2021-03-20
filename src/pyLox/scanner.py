@@ -1,5 +1,4 @@
 import sys
-from decimal import Decimal
 from token import Token
 from token_type import TokenType
 from error_handler import ErrorHandler
@@ -146,7 +145,7 @@ class Scanner:
             self.advance()
             while self.is_digit(self.peek()):
                 self.advance()
-        self.add_token(TokenType.NUMBER, Decimal(self.source[self.start:self.current]))
+        self.add_token(TokenType.NUMBER, int(self.source[self.start:self.current]))
 
     def peek_next(self) -> chr:
         if self.current + 1 >= len(self.source):
