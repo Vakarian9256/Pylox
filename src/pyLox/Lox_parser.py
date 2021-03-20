@@ -48,7 +48,7 @@ class Parser:
             if self.match(TokenType.VAR):
                 return self.var_declaration()
             return self.statement()
-        except Parser.ParseError as error:
+        except ParseError as error:
             self.synchronize()
             return None
 
@@ -440,7 +440,7 @@ class Parser:
 
     def error(self, token: Token, message: str) -> ParseError:
         self.error_handler.error_on_token(token, message)
-        return Parser.ParseError("")
+        return ParseError("")
 
     def synchronize(self):
         self.advance()

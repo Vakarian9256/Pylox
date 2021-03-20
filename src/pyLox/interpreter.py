@@ -313,7 +313,7 @@ class Interpreter(Visitor):
     
     def check_number_operand(self, operator: Token, *args):
         for arg in args:
-            if type(arg) is not float:
+            if (type(arg) is not float) and (type(arg) is not int):
                 raise LoxRunTimeError(operator, "Operands must be numbers.")
     
     def stringify(self, value: any) -> str:
