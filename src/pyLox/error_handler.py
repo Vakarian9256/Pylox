@@ -1,3 +1,6 @@
+'''
+The module houses the definition of the error handler, whose job is to monitor if a parsing or a runtime error occured and report them to the user.
+'''
 import sys
 from token import Token
 from token_type import TokenType

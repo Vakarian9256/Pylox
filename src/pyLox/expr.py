@@ -1,3 +1,7 @@
+'''
+The module houses the definitions of all of the expressions that can be encountered in a Lox source file.
+We use the visitor design pattern to evaluate expressions so each expression will have the accept method.
+'''
 from abc import ABC, abstractmethod
 from typing import Any
 from token import Token 

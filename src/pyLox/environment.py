@@ -1,3 +1,6 @@
+'''
+The module houses the defintion of an environment, which is the implementation of a scope in Lox.
+'''
 import sys
 from typing import Any
 from token import Token

@@ -1,3 +1,6 @@
+'''
+The module serves as our lexer/scanner whose job is to scan the file and create tokens based on the input.
+'''
 import sys
 from token import Token
 from token_type import TokenType
@@ -17,6 +20,7 @@ class Scanner:
         self.current = 0
         self.line = 1
 
+        # A dictionary of keywords that have no operands which matches a string to the matching token type
         self.keywords = { 
             "and" : TokenType.AND,
             "break" : TokenType.BREAK,
@@ -37,6 +41,7 @@ class Scanner:
             "while" : TokenType.WHILE
             }
 
+        # A dictionary which matches strings of keywords of expressions whose role changes based on the following token to the matching token type
         self.double_keys = {
             "!" : DoubleToken(TokenType.BANG, TokenType.BANG_EQUAL),
             "=" : DoubleToken(TokenType.EQUAL, TokenType.EQUAL_EQUAL),
@@ -44,6 +49,7 @@ class Scanner:
             ">" : DoubleToken(TokenType.GREATER, TokenType.GREATER_EQUAL)
             }
 
+        # A dictionary which matches strings of keywords of tokens who have one role to the matching token type.
         self.single_keys = {
             "(" : TokenType.LEFT_PAREN,
             ")" : TokenType.RIGHT_PAREN,
@@ -57,17 +63,19 @@ class Scanner:
             "*" : TokenType.STAR
             }
     
+
+    # The function scans the file and creates tokens based on the input.
     def scan_tokens(self) -> list[Token]:
         while not self.is_at_end():
             self.start = self.current
             self.scan_token()
-        
         self.tokens.append(Token(TokenType.EOF, "", None, self.line))
         return self.tokens
 
     def is_at_end(self) -> bool:
         return self.current >= len(self.source)
     
+    # The function creates a token based on the current character in the file.
     def scan_token(self):
         char = self.advance()
         if char in self.single_keys:
@@ -140,7 +148,6 @@ class Scanner:
     def number(self):
         while self.is_digit(self.peek()):
             self.advance()
-        
         if self.peek() == '.' and self.is_digit(self.peek_next()):
             self.advance()
             while self.is_digit(self.peek()):
@@ -158,6 +165,8 @@ class Scanner:
     def is_alpha_numeric(self,char: chr) -> chr:
         return self.is_digit(char) or self.is_alpha(char)
 
+
+    # The function scans an identifier token from the source file.
     def identifier(self):
         while self.is_alpha_numeric(self.peek()):
             self.advance()
@@ -187,6 +196,7 @@ class Scanner:
                 self.advance()
             self.advance()
 
+    # adds tokens for a ternary conditional expression.
     def add_conditional(self):
         self.add_token(TokenType.QUESTION)
         while not self.match(':'):

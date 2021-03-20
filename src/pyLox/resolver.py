@@ -1,3 +1,7 @@
+'''
+The module serves as our resolver, whose job is to walk over our tree and perform semantic analysis on the code.
+The resolver resolves our variables - tracking down which declaration it refers to, by implementing the visitor pattern.
+'''
 from visitor import Visitor
 #from stmt import Stmt, Expression,Print, Var, Block, If, While, Break, Fun, Return, Class
 from stmt import Stmt, Expression, Var, Block, If, While, Break, Fun, Return, Class
@@ -9,7 +13,6 @@ from token_type import TokenType
 from function_type import FunctionType
 from var_state import VarState
 from class_type import ClassType
-from collections import namedtuple
 
 class Resolver(Visitor):
     def __init__(self, interpreter: Interpreter, error_handler: ErrorHandler):

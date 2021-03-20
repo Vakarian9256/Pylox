@@ -1,3 +1,7 @@
+'''
+The module is used to define the visitor pattern, the visits are implemented in the interpreter and the resolver.
+We use the visitor design pattern to resolve variables, execute statements and evaluate expressions.
+'''
 from abc import ABC, abstractmethod
 #from stmt import Stmt, Expression,Print, Var, Block, If, While, Break, Fun, Return, Class
 from stmt import Stmt, Expression, Var, Block, If, While, Break, Fun, Return, Class

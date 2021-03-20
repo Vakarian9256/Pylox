@@ -1,3 +1,7 @@
+'''
+The module houses the definition of a function in Lox. Through this class we can call functions in Lox and add methods to classes.
+The Lox function implements the Lox callable class.
+'''
 from typing import Any
 from Lox_callable import LoxCallable
 #from stmt import Stmt, Expression,Print, Var, Block, If, While, Break, Fun, Return, Class
@@ -31,6 +35,7 @@ class LoxFunction(LoxCallable):
     def arity(self):
         return len(self.declaration.params)
     
+    # This function binds a function to an instance.
     def bind(self, instance):
         environment = Environment(self.closure)
         environment.define(instance)

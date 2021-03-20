@@ -1,3 +1,8 @@
+'''
+The module houses definitions for all of the statements that can be encountered in a lox file.
+We use the visitor design pattern to execute statements so each statement will have the accept method.
+The Print statement is hidden in a comment as I changed it to be a native function.
+'''
 from abc import ABC, abstractmethod
 from expr import Expr
 from token import Token 
@@ -44,7 +49,7 @@ class If(Stmt):
         return visitor.visit_if_stmt(self)
 
 class Fun(Stmt):
-    def __init__(self, name: Token, function):
+    def __init__(self, name: Token, function: "Function"):
         self.name = name
         self.function = function
 
@@ -60,7 +65,7 @@ class Return(Stmt):
         return visitor.visit_return_stmt(self)
 
 class Class(Stmt):
-    def __init__(self, name: Token, super_class, methods: list[Stmt], class_methods: list[Stmt]):
+    def __init__(self, name: Token, super_class :"Class", methods: list[Stmt], class_methods: list[Stmt]):
         self.name = name
         self.super_class = super_class
         self.methods = methods

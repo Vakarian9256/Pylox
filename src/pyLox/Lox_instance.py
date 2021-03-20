@@ -1,3 +1,6 @@
+'''
+The module houses the definition of an instance of a class in Lox - an object.
+'''
 from token import Token
 
 class LoxInstance():

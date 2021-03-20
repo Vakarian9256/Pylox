@@ -27,7 +27,7 @@ class _Set(LoxCallable):
         if index is not None:
             if type(index) is int or (type(index) is float and index.is_integer()):
                 index = int(index)
-                if index < len(self.outer.elements):
+                if index >= 0 and index < len(self.outer.elements):
                     self.outer.elements[int(index)] = value
                 else:
                     raise LoxRunTimeError(self.name,"Array index out of range.")

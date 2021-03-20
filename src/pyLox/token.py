@@ -1,3 +1,6 @@
+'''
+The module houses the definition of a token.
+'''
 from token_type import TokenType
 
 class Token():

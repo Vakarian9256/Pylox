@@ -1,3 +1,7 @@
+'''
+The module houses the definition of a class in Lox. The class inherits from instance
+, which is how we implement metaclasses and class methods, and implements Lox callable.
+'''
 from abc import ABC, abstractmethod
 from typing import Any
 from Lox_callable import LoxCallable

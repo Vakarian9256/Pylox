@@ -1,4 +1,7 @@
-
+'''
+This module was used to test the parser before we wrote the interpreter, so its use is depracated, but i kept it here in case someone would like 
+to compare their printer to mine.
+'''
 from visitor import Visitor
 from token import Token
 from token_type import TokenType

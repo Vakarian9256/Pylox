@@ -1,3 +1,7 @@
+'''
+The module serves as our interpreter pass, whose job is to evaluate and execute statements, and find and report runtime errors.
+The evalutation and execution are achieved with the visitor design pattern, and therefore it will implement the visitor class.
+'''
 import sys
 import operator
 from typing import Any
