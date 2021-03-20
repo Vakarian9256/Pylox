@@ -36,3 +36,11 @@ Resolving And Binding:
 Classes:
 * Added [metaclasses](https://en.wikipedia.org/wiki/Metaclass), and through them added support for [class methods](https://en.wikipedia.org/wiki/Method_(computer_programming)#Class_methods)
 * Added support for [get methods](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get) - more info [here](https://craftinginterpreters.com/classes.html#challenges).
+
+# Personal Additions
+* Added a native input command - read(message) - message will be printed as a prompt for the user.
+* Added a native array class which has the following methods:
+  set(i, value) - if i is not nil then set value at index i, otherwise append value to the end.
+  get(i) - returns the value at index i.
+  length() - returns the length of the array.
+* Changed print to be a native function.
