@@ -1,5 +1,6 @@
 from visitor import Visitor
-from stmt import Stmt, Expression, Print, Var, Block, If, While, Break, Fun, Return, Class
+#from stmt import Stmt, Expression,Print, Var, Block, If, While, Break, Fun, Return, Class
+from stmt import Stmt, Expression, Var, Block, If, While, Break, Fun, Return, Class
 from expr import Expr, Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call, Get, Set, This, Super
 from error_handler import ErrorHandler
 from token import Token
@@ -78,10 +79,10 @@ class Resolver(Visitor):
         self.resolve(stmt.then_branch)
         if stmt.else_branch is not None:
             self.resolve(stmt.else_branch)
-
+    '''
     def visit_print_stmt(self, stmt: Print):
-        self.resolve(stmt.expr)
-
+      self.resolve(stmt.expr)
+    '''
     def visit_return_stmt(self, stmt: Return):
         if self.current_function == FunctionType.NONE:
             self.error_handler.error_on_token(stmt.keyword,"Can't return from top-level code.")

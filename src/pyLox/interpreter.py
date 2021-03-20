@@ -1,9 +1,10 @@
 import sys
 import operator
 from typing import Any
-from native import Clock, Read, Array
+from native import Clock, Read, Array, Print
 from visitor import Visitor
-from stmt import Stmt, Expression, Print, Var, Block, If, While, Break, Fun, Return, Class
+#from stmt import Stmt, Expression,Print, Var, Block, If, While, Break, Fun, Return, Class
+from stmt import Stmt, Expression, Var, Block, If, While, Break, Fun, Return, Class
 from expr import Expr, Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call, Get, Set, This, Super
 from token_type import TokenType
 from token import Token
@@ -39,6 +40,7 @@ class Interpreter(Visitor):
         self.globals['clock'] =  Clock()
         self.globals['read'] = Read()
         self.globals['array'] = Array()
+        self.globals['print'] = Print()
         self.locals = {}
         self.slots = {}
 
@@ -71,11 +73,11 @@ class Interpreter(Visitor):
 
     def visit_expression_stmt(self, stmt: Expression):
         expr = self.evaluate(stmt.expr)
-
+    '''
     def visit_print_stmt(self, stmt: Print):
         value = self.evaluate(stmt.expr)
         print(self.stringify(value))
-
+    '''
     def visit_block_stmt(self, stmt: Block):
         self.execute_block(stmt.statements, Environment(self.environment))
 
@@ -169,7 +171,9 @@ class Interpreter(Visitor):
     def visit_unary_expr(self, expr: Unary) -> str:
         right = self.evaluate(expr.right)
         if expr.operator.type_ == TokenType.MINUS:
-            return -int(right)
+            value =  -float(right)
+            value = int(value) if value.is_integer() else value
+            return value
         if expr.operator.type_ == TokenType.BANG:
             return not self.is_truth(right)
 
@@ -178,23 +182,32 @@ class Interpreter(Visitor):
         right = self.evaluate(expr.right)
         if expr.operator.type_ == TokenType.MINUS:
             self.check_number_operand(expr.operator, left, right)
-            return int(left) - int(right)
+            value = float(left) - float(right)
+            value = int(value) if value.is_integer() else value
+            return value            
         elif expr.operator.type_ == TokenType.STAR:
             self.check_number_operand(expr.operator, left, right)
-            return int(left) * int(right)
+            value = float(left) * float(right)
+            value = int(value) if value.is_integer() else value
+            return value
         elif expr.operator.type_ == TokenType.SLASH:
             if self.legal_divisor(expr.operator, right):
                 self.check_number_operand(expr.operator, left, right)
-                return int(left) / int(right)
+                value = float(left) / float(right)
+                value = int(value) if value.is_integer() else value
+                return value
         elif expr.operator.type_ == TokenType.PLUS:
             '''
             Notice that because of Pythons dynamic typing, we didnt have to check for types,
-            but we did so for learning purposes
+            but we did so for learning purposes.
             '''
-            if type(left) is int and type(right) is int:
-                return int(left) + int(right)
+            if (type(left) is float or type(left) is int) and (type(right) is float or type(right) is int):
+                value = float(left) + float(right)
+                value = int(value) if value.is_integer() else value
+                return value
             elif type(left) is str or type(right) is str:
-                return self.stringify(left)+self.stringify(right)
+                value = self.stringify(left)+self.stringify(right)
+                return value
             raise LoxRunTimeError(expr.operator, "Operands must either strings or numbers.")
         elif expr.operator.type_ in Interpreter.op_dic:
                 op_func = Interpreter.op_dic[expr.operator.type_]
@@ -270,7 +283,8 @@ class Interpreter(Visitor):
         for arg in args:
             if type(arg) is not str:
                 all_string = False
-            if type(arg) is not int:
+            if type(arg) is not float and type(arg) is not int:
+                print(type(arg))
                 all_num = False
         if all_num == False and all_string == False:
             raise LoxRunTimeError(operator, "Operands must all be of the same type.")
@@ -295,20 +309,20 @@ class Interpreter(Visitor):
     
     def check_number_operand(self, operator: Token, *args):
         for arg in args:
-            if type(arg) is not int:
+            if type(arg) is not float:
                 raise LoxRunTimeError(operator, "Operands must be numbers.")
     
     def stringify(self, value: any) -> str:
         if value is None:
             return "nil"
-        if type(value) is int:
+        if type(value) is float:
             text = str(value)
-            if text.endswith(".0"):
+            if text.endswith(".0") or value.is_integer():
                 text = text[0:len(text)-2]
             return text
         return str(value)
 
-    def legal_divisor(self, operator: Token, divisor: int) -> bool:
+    def legal_divisor(self, operator: Token, divisor: float) -> bool:
         if divisor == 0:
             raise DivisionByZeroError(operator)
             return False

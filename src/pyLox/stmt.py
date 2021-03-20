@@ -11,14 +11,14 @@ class Expression(Stmt):
 
     def accept(self, visitor):
         return visitor.visit_expression_stmt(self)
-
+'''
 class Print(Stmt):
     def __init__(self, expr: Expr):
         self.expr = expr
 
     def accept(self, visitor):
         return visitor.visit_print_stmt(self)
-
+'''
 class Var(Stmt):
     def __init__(self, name: Token, initializer: Expr):
         self.name = name

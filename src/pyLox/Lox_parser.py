@@ -3,7 +3,8 @@ from token_type import TokenType
 from function_type import FunctionType
 from token import Token
 from error_handler import ErrorHandler
-from stmt import Stmt, Expression, Print, Var, Block, If, While, Break, Fun, Return, Class
+#from stmt import Stmt, Expression,Print, Var, Block, If, While, Break, Fun, Return, Class
+from stmt import Stmt, Expression, Var, Block, If, While, Break, Fun, Return, Class
 from expr import Expr, Assign, Binary, Conditional, Grouping, Literal, Logical, Unary, Variable, Function, Call, Get, Set, This, Super
 from var_state import VarState
 
@@ -44,7 +45,7 @@ class Parser:
         initializer = None
         if self.match(TokenType.EQUAL):
             initializer = self.expression()
-        self.consume(TokenType.SEMICOLON, "Expect semicolon after variable declaration.")
+        self.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.")
         return Var(name, initializer)
 
     def function(self, kind: FunctionType) -> Stmt:
@@ -94,19 +95,21 @@ class Parser:
             return self.for_statement()
         if self.match(TokenType.BREAK):
             return self.break_statement()
+        '''
         if self.match(TokenType.PRINT):
             return self.print_statement()
+        '''
         if self.match(TokenType.RETURN):
             return self.return_statement()
         if self.match(TokenType.LEFT_BRACE):
             return Block(self.block_statement())
         return self.expression_statement()
-
+    '''
     def print_statement(self) -> Stmt:
         value = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
         return Print(value)
-
+    '''
     def block_statement(self) -> list[Stmt]:
         statements = []
         while (not self.check(TokenType.RIGHT_BRACE)) and not self.is_at_end():

@@ -1,6 +1,7 @@
 from typing import Any
 from Lox_callable import LoxCallable
-from stmt import Expression, Print, Var, Block, If, While, Fun, Return, Break
+#from stmt import Stmt, Expression,Print, Var, Block, If, While, Break, Fun, Return, Class
+from stmt import Stmt, Expression, Var, Block, If, While, Break, Fun, Return, Class
 from expr import Function
 from environment import Environment
 from error import ReturnException

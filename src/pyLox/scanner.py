@@ -28,7 +28,7 @@ class Scanner:
             "if" : TokenType.IF,
             "nil" : TokenType.NIL,
             "or" : TokenType.OR,
-            "print" : TokenType.PRINT,
+            '''"print" : TokenType.PRINT,'''
             "return" : TokenType.RETURN,
             "super" : TokenType.SUPER,
             "this" : TokenType.THIS,
@@ -145,7 +145,7 @@ class Scanner:
             self.advance()
             while self.is_digit(self.peek()):
                 self.advance()
-        self.add_token(TokenType.NUMBER, int(self.source[self.start:self.current]))
+        self.add_token(TokenType.NUMBER, float(self.source[self.start:self.current]))
 
     def peek_next(self) -> chr:
         if self.current + 1 >= len(self.source):
