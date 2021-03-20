@@ -38,7 +38,7 @@ Classes:
 * Added support for [get methods](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get) - more info [here](https://craftinginterpreters.com/classes.html#challenges).
 
 # Personal Additions
-* Added a native input command - read() which receives a single argument which will be printed as a prompt.
+* Added a native input command - read(message) - message will be printed as a prompt for the user.
 * Added a native array class which has the following methods:
   set(i, value) - if i is not nil then set value at index i, otherwise append value to the end.
   get(i) - returns the value at index i.
