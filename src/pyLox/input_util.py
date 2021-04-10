@@ -2,7 +2,6 @@
 The module houses 3 utility functions that are used in the Lox Native Library input function - read.
 '''
 def _typify(string: str):
-    print(string)
     if string == 'nil':
         return None
     value = convert_to_number(string)

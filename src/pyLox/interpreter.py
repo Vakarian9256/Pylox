@@ -56,7 +56,7 @@ class Interpreter(Visitor):
             self.error_handler.runtime_error(error)
 
     def execute_by_mode(self, statement: Stmt, mode: RunMode):
-        if mode == RunMode.REPL and type(statement) is Expression and type(statement.expr) is not Assign:
+        if mode == RunMode.REPL and type(statement) is Expression and type(statement.expr) is not Assign and type(statement.expr) is not Call:
                 value = self.evaluate(statement.expr)
                 print(self.stringify(value))
         else:
