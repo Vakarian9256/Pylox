@@ -18,7 +18,7 @@ class LoxRunTimeError(RuntimeError):
 # An error that is raised when the interpreter encounters a division by zero.
 class DivisionByZeroError(LoxRunTimeError):
     def __init__(self, token: Token):
-        super().__init__("Division by zero.")
+        super().__init__(token, "Division by zero.")
 
 # An exception that is raised when a break statement is read to escape from the while loop.
 class BreakException(Exception):
