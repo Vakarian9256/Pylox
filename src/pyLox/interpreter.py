@@ -223,8 +223,8 @@ class Interpreter(Visitor):
 
     def visit_conditional_expr(self, expr: Conditional) -> str:
         condition = self.evaluate(expr.condition)
-        then_branch = self.evaluate(expr.left)
-        else_branch = self.evaluate(expr.right)
+        then_branch = self.evaluate(expr.then_branch)
+        else_branch = self.evaluate(expr.else_branch)
         if self.is_truth(condition):
             return then_branch
         return else_branch

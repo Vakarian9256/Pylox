@@ -252,7 +252,7 @@ class Parser:
         expr = self.or_expr()
         if self.match(TokenType.QUESTION):
             then_branch = self.or_expr()
-            self.consume(TokenType.COLON, " Expect ':' seperator after then branch in ternary conditional.")
+            #self.consume(TokenType.COLON, " Expect ':' seperator after then branch in ternary conditional.")
             else_branch = self.or_expr()
             expr = Conditional(expr, then_branch, else_branch)
         return expr

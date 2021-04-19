@@ -206,7 +206,7 @@ class Scanner:
             self.start = self.current
             self.scan_token()
         self.current -= 1
-        self.add_token(TokenType.COLON)
+        #self.add_token(TokenType.COLON)
         self.advance()
             
         
