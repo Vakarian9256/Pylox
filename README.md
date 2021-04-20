@@ -1,4 +1,4 @@
-# Pylox Interpreter
+# Pylox
 An implementation of a tree walker interpreter for the Lox language from the book [Crafting Interpreters by Bob Nystrom](https://craftinginterpreters.com/index.html) in Python.
 The interpreter can be used in two different modes:
 1. REPL - statements & expressions are passed through the terminal. statements are executed while expressions are evaluated and displayed.
@@ -7,8 +7,8 @@ The interpreter can be used in two different modes:
 # Challenges completed:
 
 ## Chapter 6 - Parsing Expressions:
-* [Comma operator](https://en.wikipedia.org/wiki/Comma_operator).
-* [Ternary Operator](https://en.wikipedia.org/wiki/%3F:).
+* Added the [Comma operator](https://en.wikipedia.org/wiki/Comma_operator).
+* Added the [Ternary Operator](https://en.wikipedia.org/wiki/%3F:).
 * Error reporting on binary operators missing a left-hand operand.
 
 ## Chapter 7 - Evaluating Expressions:
